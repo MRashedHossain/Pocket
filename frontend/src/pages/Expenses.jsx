@@ -27,7 +27,7 @@ export default function Expenses() {
   const load = () => api.get(`/expenses?month=${month}`).then(r => setItems(r.data)).catch(() => {})
   useEffect(() => { load() }, [month])
   useEffect(() => {
-    api.get('/expense-categories').then(r => { setCats(r.data || []); if (r.data?.length) setForm(f => ({ ...f, category: r.data[0].name })) }).catch(() => {})
+    api.get('/expense-categories').then(r => { setCats(r.data || []) }).catch(() => {})
   }, [])
 
   const submit = async e => {
@@ -35,7 +35,7 @@ export default function Expenses() {
     try {
       await api.post('/expenses', { ...form, amount: Number(form.amount) })
       setModal(false)
-      setForm({ date: new Date().toISOString().slice(0, 10), category: cats[0]?.name || '', amount: '', note: '', method: 'Cash' })
+      setForm({ date: new Date().toISOString().slice(0, 10), category: '', amount: '', note: '', method: 'Cash' })
       load()
     } catch (err) { setError(err.response?.data?.error?.message || 'Failed to save') }
   }
@@ -81,7 +81,7 @@ export default function Expenses() {
                     {e.category}
                   </span>
                 </td>
-                <td data-label="Note" style={{ color: '#6f6880' }}>{e.note}</td>
+                <td data-label="Note" style={{ color: '#6f6880' }}>{e.note && e.note !== 'Unspecified' ? e.note : null}</td>
                 <td data-label="Method" style={{ color: '#6f6880' }}>{e.method}</td>
                 <td data-label="Amount" style={{ fontWeight: 700 }} className="tnum">৳{e.amount.toLocaleString()}</td>
                 <td data-label="">
@@ -107,10 +107,16 @@ export default function Expenses() {
               </div>
               <div>
                 <label className="lbl">Category</label>
-                {cats.length > 0
-                  ? <select className="inp" value={form.category} onChange={e => setForm(f => ({ ...f, category: e.target.value }))}>{cats.map(c => <option key={c.id}>{c.name}</option>)}</select>
-                  : <input className="inp" placeholder="e.g. Groceries" required value={form.category} onChange={e => setForm(f => ({ ...f, category: e.target.value }))} />
-                }
+                <select className="inp" value={form.category}
+                  onChange={e => setForm(f => ({ ...f, category: e.target.value }))}>
+                  {cats.length === 0
+                    ? <option value="">Add categories in Settings</option>
+                    : <>
+                        <option value="">Select category…</option>
+                        {cats.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
+                      </>
+                  }
+                </select>
               </div>
             </div>
             <div className="form-row">

@@ -59,7 +59,7 @@ func CreateSettingsCategory(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var body struct {
 			Name string `json:"name" binding:"required"`
-			Kind string `json:"kind" binding:"required,oneof=income expense"`
+			Kind string `json:"kind" binding:"required,oneof=income expense debt"`
 		}
 		if err := c.ShouldBindJSON(&body); err != nil {
 			validationErr(c, err.Error())
@@ -70,6 +70,10 @@ func CreateSettingsCategory(db *gorm.DB) gin.HandlerFunc {
 			cat := models.IncomeCategory{UserID: uid, Name: body.Name}
 			db.Create(&cat)
 			c.JSON(http.StatusCreated, gin.H{"id": cat.ID, "name": cat.Name, "kind": "income"})
+		} else if body.Kind == "debt" {
+			cat := models.DebtCategory{UserID: uid, Name: body.Name}
+			db.Create(&cat)
+			c.JSON(http.StatusCreated, gin.H{"id": cat.ID, "name": cat.Name, "kind": "debt"})
 		} else {
 			cat := models.ExpenseCategory{UserID: uid, Name: body.Name, Limit: 0}
 			db.Create(&cat)
@@ -103,6 +107,13 @@ func RenameSettingsCategory(db *gorm.DB) gin.HandlerFunc {
 			c.JSON(http.StatusOK, gin.H{"id": exp.ID, "name": exp.Name, "kind": "expense"})
 			return
 		}
+		var dbt models.DebtCategory
+		if db.Where("id = ? AND user_id = ?", id, uid).First(&dbt).Error == nil {
+			dbt.Name = body.Name
+			db.Save(&dbt)
+			c.JSON(http.StatusOK, gin.H{"id": dbt.ID, "name": dbt.Name, "kind": "debt"})
+			return
+		}
 		notFound(c, "Category")
 	}
 }
@@ -120,6 +131,12 @@ func DeleteSettingsCategory(db *gorm.DB) gin.HandlerFunc {
 		var exp models.ExpenseCategory
 		if db.Where("id = ? AND user_id = ?", id, uid).First(&exp).Error == nil {
 			db.Delete(&exp)
+			c.Status(http.StatusNoContent)
+			return
+		}
+		var dbt models.DebtCategory
+		if db.Where("id = ? AND user_id = ?", id, uid).First(&dbt).Error == nil {
+			db.Delete(&dbt)
 			c.Status(http.StatusNoContent)
 			return
 		}

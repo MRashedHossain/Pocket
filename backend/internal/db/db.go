@@ -24,6 +24,7 @@ func Connect(dsn string) (*gorm.DB, error) {
 		&models.Income{},
 		&models.Budget{},
 		&models.Account{},
+		&models.DebtCategory{},
 		&models.Debt{},
 		&models.Payment{},
 		&models.Project{},

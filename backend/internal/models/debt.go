@@ -7,6 +7,19 @@ import (
 	"gorm.io/gorm"
 )
 
+type DebtCategory struct {
+	ID     string `gorm:"primaryKey;type:varchar(36)" json:"id"`
+	UserID string `gorm:"not null;type:varchar(36)" json:"userId"`
+	Name   string `gorm:"not null" json:"name"`
+}
+
+func (d *DebtCategory) BeforeCreate(_ *gorm.DB) error {
+	if d.ID == "" {
+		d.ID = uuid.New().String()
+	}
+	return nil
+}
+
 type Debt struct {
 	ID       string     `gorm:"primaryKey;type:varchar(36)" json:"id"`
 	UserID   string     `gorm:"not null;type:varchar(36)" json:"userId"`
@@ -16,6 +29,7 @@ type Debt struct {
 	Date     time.Time  `gorm:"type:date;not null" json:"date"`
 	Due      *time.Time `gorm:"type:date" json:"due"`
 	Note     string     `json:"note"`
+	Category string     `json:"category"`
 	Settled  bool       `gorm:"default:false" json:"settled"`
 	Payments []Payment  `gorm:"foreignKey:DebtID" json:"-"`
 }

@@ -126,9 +126,6 @@ func CreateExpense(db *gorm.DB) gin.HandlerFunc {
 			validationErr(c, "Invalid date format, use YYYY-MM-DD")
 			return
 		}
-		if body.Note == "" {
-			body.Note = "Unspecified"
-		}
 		e := models.Expense{UserID: currentUser(c).ID, Date: date, Category: body.Category, Amount: body.Amount, Note: body.Note, Method: body.Method}
 		db.Create(&e)
 		c.JSON(http.StatusCreated, toExpenseOut(e))

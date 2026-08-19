@@ -117,6 +117,13 @@ func main() {
 	deb.GET("/:id/payments", handlers.ListPayments(database))
 	deb.DELETE("/:id/payments/:paymentId", handlers.DeletePayment(database))
 
+	// ── Debt Categories ───────────────────────────────────────────────────────
+	dc := v1.Group("/debt-categories")
+	dc.Use(auth)
+	dc.GET("", handlers.ListDebtCategories(database))
+	dc.POST("", handlers.CreateDebtCategory(database))
+	dc.DELETE("/:id", handlers.DeleteDebtCategory(database))
+
 	// ── Projects ──────────────────────────────────────────────────────────────
 	proj := v1.Group("/projects")
 	proj.Use(auth)

@@ -23,20 +23,24 @@ function KindChip({ kind }) {
 
 export default function Debts() {
   const [debts, setDebts] = useState([])
+  const [debtCats, setDebtCats] = useState([])
   const [modal, setModal] = useState(null)
   const [payDebt, setPayDebt] = useState(null)
-  const [form, setForm] = useState({ kind: 'lent', person: '', amount: '', due: '', note: '' })
+  const [form, setForm] = useState({ kind: 'lent', person: '', amount: '', due: '', note: '', category: '' })
   const [payForm, setPayForm] = useState({ amount: '', note: '' })
   const [error, setError] = useState('')
 
   const load = () => api.get('/debts').then(r => setDebts(r.data)).catch(() => {})
-  useEffect(() => { load() }, [])
+  useEffect(() => {
+    load()
+    api.get('/debt-categories').then(r => setDebtCats(r.data || [])).catch(() => {})
+  }, [])
 
   const submit = async e => {
     e.preventDefault(); setError('')
     try {
-      await api.post('/debts', { ...form, amount: Number(form.amount), due: form.due || undefined })
-      setModal(null); setForm({ kind: 'lent', person: '', amount: '', due: '', note: '' }); load()
+      await api.post('/debts', { ...form, amount: Number(form.amount), due: form.due || undefined, category: form.category })
+      setModal(null); setForm({ kind: 'lent', person: '', amount: '', due: '', note: '', category: '' }); load()
     } catch (err) { setError(err.response?.data?.error?.message || 'Failed to save') }
   }
 
@@ -72,15 +76,16 @@ export default function Debts() {
           <div className="card table-wrap" style={{ padding: 0 }}>
             <table className="pocket-table" style={{ minWidth: 600 }}>
               <thead><tr>
-                <th>Person</th><th>Kind</th><th>Note</th><th style={{ textAlign: 'right' }}>Total</th>
+                <th>Person</th><th>Category</th><th>Kind</th><th>Note</th><th style={{ textAlign: 'right' }}>Total</th>
                 <th style={{ textAlign: 'right' }}>Paid</th><th style={{ textAlign: 'right' }}>Remaining</th><th>Due</th><th />
               </tr></thead>
               <tbody>
                 {open.map(d => (
                   <tr key={d.id}>
                     <td data-label="Person" style={{ fontWeight: 700 }}>{d.person}</td>
+                    <td data-label="Category" style={{ color: '#6f6880' }}>{d.category || null}</td>
                     <td data-label="Kind"><KindChip kind={d.kind} /></td>
-                    <td data-label="Note" style={{ color: '#6f6880', fontSize: 14 }}>{d.note}</td>
+                    <td data-label="Note" style={{ color: '#6f6880', fontSize: 14 }}>{d.note || null}</td>
                     <td data-label="Total" className="tnum">৳{d.amount.toLocaleString()}</td>
                     <td data-label="Paid" style={{ color: '#0b6b52', fontWeight: 700 }} className="tnum">৳{d.paidAmount.toLocaleString()}</td>
                     <td data-label="Left" style={{ color: '#9c3a22', fontWeight: 700 }} className="tnum">৳{d.remaining.toLocaleString()}</td>
@@ -114,7 +119,7 @@ export default function Debts() {
                   <tr key={d.id} style={{ opacity: 0.7 }}>
                     <td data-label="Person" style={{ fontWeight: 700 }}>{d.person}</td>
                     <td data-label="Kind"><KindChip kind={d.kind} /></td>
-                    <td data-label="Note" style={{ color: '#6f6880', fontSize: 14 }}>{d.note}</td>
+                    <td data-label="Note" style={{ color: '#6f6880', fontSize: 14 }}>{d.note || null}</td>
                     <td data-label="Amount" className="tnum">৳{d.amount.toLocaleString()}</td>
                     <td data-label="">
                       <button onClick={() => del(d.id)} style={{ background: 'none', border: 0, cursor: 'pointer', color: '#b0a8bd', fontSize: 13, fontWeight: 700, padding: '5px 9px', borderRadius: 999 }}
@@ -143,6 +148,19 @@ export default function Debts() {
                   {k === 'lent' ? 'I lent it out' : 'I borrowed it'}
                 </button>
               ))}
+            </div>
+            <div>
+              <label className="lbl">Category</label>
+              <select className="inp" value={form.category}
+                onChange={e => setForm(f => ({ ...f, category: e.target.value }))}>
+                {debtCats.length === 0
+                  ? <option value="">Add categories in Settings</option>
+                  : <>
+                      <option value="">Select category…</option>
+                      {debtCats.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
+                    </>
+                }
+              </select>
             </div>
             <div className="form-row">
               <div>

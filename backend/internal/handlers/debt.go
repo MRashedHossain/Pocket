@@ -19,6 +19,7 @@ type debtOut struct {
 	Date       string  `json:"date"`
 	Due        *string `json:"due"`
 	Note       *string `json:"note"`
+	Category   string  `json:"category"`
 	Settled    bool    `json:"settled"`
 }
 
@@ -37,7 +38,44 @@ func toDebtOut(db *gorm.DB, d models.Debt) debtOut {
 	return debtOut{
 		ID: d.ID, Kind: d.Kind, Person: d.Person,
 		Amount: d.Amount, PaidAmount: paid, Remaining: d.Amount - paid,
-		Date: fmtDate(d.Date), Due: fmtDatePtr(d.Due), Note: note, Settled: d.Settled,
+		Date: fmtDate(d.Date), Due: fmtDatePtr(d.Due), Note: note, Category: d.Category, Settled: d.Settled,
+	}
+}
+
+// ── Debt Categories ───────────────────────────────────────────────────────────
+
+func ListDebtCategories(db *gorm.DB) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		var cats []models.DebtCategory
+		db.Where("user_id = ?", currentUser(c).ID).Find(&cats)
+		c.JSON(http.StatusOK, cats)
+	}
+}
+
+func CreateDebtCategory(db *gorm.DB) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		var body struct {
+			Name string `json:"name" binding:"required"`
+		}
+		if err := c.ShouldBindJSON(&body); err != nil {
+			validationErr(c, err.Error())
+			return
+		}
+		cat := models.DebtCategory{UserID: currentUser(c).ID, Name: body.Name}
+		db.Create(&cat)
+		c.JSON(http.StatusCreated, cat)
+	}
+}
+
+func DeleteDebtCategory(db *gorm.DB) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		var cat models.DebtCategory
+		if db.Where("id = ? AND user_id = ?", c.Param("id"), currentUser(c).ID).First(&cat).Error != nil {
+			notFound(c, "Category")
+			return
+		}
+		db.Delete(&cat)
+		c.Status(http.StatusNoContent)
 	}
 }
 
@@ -122,11 +160,12 @@ func ListDebts(db *gorm.DB) gin.HandlerFunc {
 func CreateDebt(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var body struct {
-			Kind   string  `json:"kind" binding:"required,oneof=lent borrowed"`
-			Person string  `json:"person" binding:"required"`
-			Amount int     `json:"amount" binding:"required"`
-			Due    *string `json:"due"`
-			Note   string  `json:"note"`
+			Kind     string  `json:"kind" binding:"required,oneof=lent borrowed"`
+			Person   string  `json:"person" binding:"required"`
+			Amount   int     `json:"amount" binding:"required"`
+			Due      *string `json:"due"`
+			Note     string  `json:"note"`
+			Category string  `json:"category"`
 		}
 		if err := c.ShouldBindJSON(&body); err != nil {
 			validationErr(c, err.Error())
@@ -138,7 +177,7 @@ func CreateDebt(db *gorm.DB) gin.HandlerFunc {
 		}
 		d := models.Debt{
 			UserID: currentUser(c).ID, Kind: body.Kind,
-			Person: body.Person, Amount: body.Amount, Note: body.Note,
+			Person: body.Person, Amount: body.Amount, Note: body.Note, Category: body.Category,
 		}
 		if body.Due != nil {
 			due, err := parseDate(*body.Due)
@@ -172,10 +211,11 @@ func UpdateDebt(db *gorm.DB) gin.HandlerFunc {
 			return
 		}
 		var body struct {
-			Person  *string `json:"person"`
-			Due     *string `json:"due"`
-			Note    *string `json:"note"`
-			Settled *bool   `json:"settled"`
+			Person   *string `json:"person"`
+			Due      *string `json:"due"`
+			Note     *string `json:"note"`
+			Category *string `json:"category"`
+			Settled  *bool   `json:"settled"`
 		}
 		c.ShouldBindJSON(&body)
 		if body.Person != nil {
@@ -191,6 +231,9 @@ func UpdateDebt(db *gorm.DB) gin.HandlerFunc {
 		}
 		if body.Note != nil {
 			d.Note = *body.Note
+		}
+		if body.Category != nil {
+			d.Category = *body.Category
 		}
 		if body.Settled != nil {
 			d.Settled = *body.Settled
