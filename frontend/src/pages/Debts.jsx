@@ -78,14 +78,14 @@ export default function Debts() {
               <tbody>
                 {open.map(d => (
                   <tr key={d.id}>
-                    <td style={{ fontWeight: 700 }}>{d.person}</td>
-                    <td><KindChip kind={d.kind} /></td>
-                    <td style={{ color: '#6f6880', fontSize: 14 }}>{d.note || '—'}</td>
-                    <td style={{ textAlign: 'right' }} className="tnum">৳{d.amount.toLocaleString()}</td>
-                    <td style={{ textAlign: 'right', color: '#0b6b52', fontWeight: 700 }} className="tnum">৳{d.paidAmount.toLocaleString()}</td>
-                    <td style={{ textAlign: 'right', color: '#9c3a22', fontWeight: 700 }} className="tnum">৳{d.remaining.toLocaleString()}</td>
-                    <td style={{ color: '#6f6880', fontSize: 14 }}>{d.due || '—'}</td>
-                    <td style={{ textAlign: 'right' }}>
+                    <td data-label="Person" style={{ fontWeight: 700 }}>{d.person}</td>
+                    <td data-label="Kind"><KindChip kind={d.kind} /></td>
+                    <td data-label="Note" style={{ color: '#6f6880', fontSize: 14 }}>{d.note}</td>
+                    <td data-label="Total" className="tnum">৳{d.amount.toLocaleString()}</td>
+                    <td data-label="Paid" style={{ color: '#0b6b52', fontWeight: 700 }} className="tnum">৳{d.paidAmount.toLocaleString()}</td>
+                    <td data-label="Left" style={{ color: '#9c3a22', fontWeight: 700 }} className="tnum">৳{d.remaining.toLocaleString()}</td>
+                    <td data-label="Due" style={{ color: '#6f6880', fontSize: 14 }}>{d.due}</td>
+                    <td data-label="">
                       <span style={{ display: 'flex', gap: 4, justifyContent: 'flex-end' }}>
                         <button onClick={() => setPayDebt(d)} style={{ background: 'none', border: 0, cursor: 'pointer', color: '#7b5cf0', fontSize: 13, fontWeight: 700, padding: '5px 9px', borderRadius: 999 }}
                           onMouseEnter={e => { e.currentTarget.style.background = '#eae1ff' }}
@@ -112,11 +112,11 @@ export default function Debts() {
               <tbody>
                 {settled.map(d => (
                   <tr key={d.id} style={{ opacity: 0.7 }}>
-                    <td style={{ fontWeight: 700 }}>{d.person}</td>
-                    <td><KindChip kind={d.kind} /></td>
-                    <td style={{ color: '#6f6880', fontSize: 14 }}>{d.note || '—'}</td>
-                    <td style={{ textAlign: 'right' }} className="tnum">৳{d.amount.toLocaleString()}</td>
-                    <td style={{ textAlign: 'right' }}>
+                    <td data-label="Person" style={{ fontWeight: 700 }}>{d.person}</td>
+                    <td data-label="Kind"><KindChip kind={d.kind} /></td>
+                    <td data-label="Note" style={{ color: '#6f6880', fontSize: 14 }}>{d.note}</td>
+                    <td data-label="Amount" className="tnum">৳{d.amount.toLocaleString()}</td>
+                    <td data-label="">
                       <button onClick={() => del(d.id)} style={{ background: 'none', border: 0, cursor: 'pointer', color: '#b0a8bd', fontSize: 13, fontWeight: 700, padding: '5px 9px', borderRadius: 999 }}
                         onMouseEnter={e => { e.currentTarget.style.color = '#ff6a4d'; e.currentTarget.style.background = '#ffe9e3' }}
                         onMouseLeave={e => { e.currentTarget.style.color = '#b0a8bd'; e.currentTarget.style.background = 'none' }}>Delete</button>

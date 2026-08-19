@@ -266,10 +266,55 @@ a:hover { color: var(--coral); }
     max-height: 85vh;
   }
 
-  /* Table font smaller */
-  .pocket-table { font-size: 13px; }
-  .pocket-table th { font-size: 10px; padding: 10px 12px; }
-  .pocket-table td { padding: 11px 12px; }
+  /* Tables → stacked cards (no horizontal scroll) */
+  .table-wrap { overflow-x: visible; }
+
+  .pocket-table,
+  .pocket-table tbody,
+  .pocket-table tbody tr { display: block; }
+
+  .pocket-table { min-width: 0 !important; }
+  .pocket-table thead { display: none; }
+
+  .pocket-table tbody tr {
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    margin-bottom: 10px;
+    padding: 10px 14px;
+    background: #fff;
+  }
+  .pocket-table tbody tr:hover { background: #fff; }
+
+  .pocket-table td {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 5px 0;
+    border: none;
+    font-size: 14px;
+    text-align: left !important;
+    gap: 8px;
+  }
+  .pocket-table td::before {
+    content: attr(data-label);
+    font-size: 10px;
+    font-weight: 800;
+    color: var(--mut);
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    font-family: 'Bricolage Grotesque', system-ui, sans-serif;
+    flex-shrink: 0;
+  }
+  /* Hide empty note cells on mobile */
+  .pocket-table td:empty { display: none; }
+  /* Action cell — borderless label, right-aligned */
+  .pocket-table td[data-label=""] {
+    justify-content: flex-end;
+    padding-top: 8px;
+    margin-top: 4px;
+    border-top: 1px solid var(--line);
+  }
+  .pocket-table td[data-label=""]::before { display: none; }
 
   /* Inputs smaller on mobile */
   .inp { min-height: 44px; font-size: 16px; } /* 16px prevents iOS zoom */

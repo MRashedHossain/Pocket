@@ -74,17 +74,17 @@ export default function Expenses() {
               <tr><td colSpan={6} style={{ textAlign: 'center', color: '#6f6880', padding: '32px 16px' }}>No expenses this month</td></tr>
             ) : items.map(e => (
               <tr key={e.id}>
-                <td style={{ color: '#6f6880', fontSize: 14 }}>{e.date}</td>
-                <td>
+                <td data-label="Date" style={{ color: '#6f6880', fontSize: 14 }}>{e.date}</td>
+                <td data-label="Category">
                   <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8, fontWeight: 600 }}>
                     <span style={{ width: 10, height: 10, borderRadius: 3, background: colorFor(e.category), flexShrink: 0 }} />
                     {e.category}
                   </span>
                 </td>
-                <td style={{ color: '#6f6880' }}>{e.note}</td>
-                <td style={{ color: '#6f6880' }}>{e.method}</td>
-                <td style={{ textAlign: 'right', fontWeight: 700 }} className="tnum">৳{e.amount.toLocaleString()}</td>
-                <td style={{ textAlign: 'right' }}>
+                <td data-label="Note" style={{ color: '#6f6880' }}>{e.note}</td>
+                <td data-label="Method" style={{ color: '#6f6880' }}>{e.method}</td>
+                <td data-label="Amount" style={{ fontWeight: 700 }} className="tnum">৳{e.amount.toLocaleString()}</td>
+                <td data-label="">
                   <button onClick={() => del(e.id)} style={{ background: 'none', border: 0, cursor: 'pointer', color: '#b0a8bd', fontSize: 13, fontWeight: 700, padding: '5px 9px', borderRadius: 999 }}
                     onMouseEnter={e => { e.currentTarget.style.color = '#ff6a4d'; e.currentTarget.style.background = '#ffe9e3' }}
                     onMouseLeave={e => { e.currentTarget.style.color = '#b0a8bd'; e.currentTarget.style.background = 'none' }}>
