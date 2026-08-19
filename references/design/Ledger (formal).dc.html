@@ -1,0 +1,1331 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/classical-af11cf96-5c2d-4722-98b0-85cef68ec2fb/styles.css">
+<script src="_ds/classical-af11cf96-5c2d-4722-98b0-85cef68ec2fb/_ds_bundle.js"></script>
+<style>
+  .app-shell { display: flex; min-height: 100vh; align-items: stretch; }
+  .side { flex: 0 0 244px; border-right: 1px solid var(--color-divider); padding: var(--space-4) var(--space-3); display: flex; flex-direction: column; gap: 2px; }
+  .main { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; }
+  .navitem { display: flex; align-items: center; gap: 10px; padding: 9px 10px; border-radius: var(--radius-md); border: 1px solid transparent; background: transparent; cursor: pointer; font-family: var(--font-heading); font-weight: 600; font-size: 15px; color: color-mix(in srgb, var(--color-text) 72%, transparent); text-align: left; min-height: 44px; }
+  .navitem:hover { background: color-mix(in srgb, var(--color-text) 6%, transparent); color: var(--color-text); }
+  .navitem[data-active="true"] { color: var(--color-accent); border-color: color-mix(in srgb, var(--color-accent) 45%, transparent); background: color-mix(in srgb, var(--color-accent) 8%, transparent); }
+  .pagepad { padding: var(--space-6) var(--space-8); display: flex; flex-direction: column; gap: var(--space-6); }
+  .topbar { display: flex; align-items: flex-end; gap: var(--space-4); padding: var(--space-4) var(--space-8); border-bottom: 1px solid var(--color-divider); }
+  .grid { display: grid; gap: var(--space-4); }
+  .g4 { grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); }
+  .g3 { grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
+  .g2 { grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); }
+  .tw { overflow-x: auto; }
+  .tw .table { min-width: 620px; }
+  [data-density="Compact"] .table td, [data-density="Compact"] .table th { padding-top: 5px; padding-bottom: 5px; }
+  .figure { font-family: var(--font-heading); font-weight: 400; font-size: 30px; line-height: 1.05; font-variant-numeric: tabular-nums; font-feature-settings: "tnum"; }
+  .tnum { font-variant-numeric: tabular-nums; font-feature-settings: "tnum"; }
+  .rowact { background: transparent; border: 0; cursor: pointer; color: color-mix(in srgb, var(--color-text) 45%, transparent); font: inherit; font-size: 12px; padding: 4px 6px; border-radius: var(--radius-sm); }
+  .rowact:hover { color: var(--color-accent-700); background: color-mix(in srgb, var(--color-accent) 12%, transparent); }
+  .login-wrap { display: flex; min-height: 100vh; }
+  @media (max-width: 900px) {
+    .app-shell { flex-direction: column; }
+    .side { flex: none; flex-direction: row; align-items: center; overflow-x: auto; border-right: 0; border-bottom: 1px solid var(--color-divider); padding: var(--space-2) var(--space-3); gap: 4px; }
+    .side .side-brand, .side .side-foot { display: none; }
+    .navitem { flex: none; white-space: nowrap; font-size: 14px; }
+    .topbar { padding: var(--space-3) var(--space-4); flex-wrap: wrap; align-items: flex-start; }
+    .pagepad { padding: var(--space-4); gap: var(--space-4); }
+    .login-art { display: none; }
+    .figure { font-size: 25px; }
+  }
+</style>
+</helmet>
+<div data-density="{{ density }}" style="min-height:100vh;background:var(--color-bg);color:var(--color-text);font-family:var(--font-body)">
+
+  <sc-if value="{{ isLogin }}" hint-placeholder-val="{{ true }}">
+    <div class="login-wrap">
+      <div class="login-art" style="flex:1 1 46%;background:#1a1917;color:#f3f2f2;padding:var(--space-8);display:flex;flex-direction:column;justify-content:space-between;min-width:0">
+        <div style="font-family:var(--font-heading);font-size:14px;letter-spacing:0.24em;text-transform:uppercase;color:#b68235">Ledger</div>
+        <div>
+          <div style="font-family:var(--font-heading);font-weight:400;font-size:56px;line-height:1.04;letter-spacing:-0.02em;max-width:9em">A plain account of what came in and what went out.</div>
+          <div style="height:1px;background:color-mix(in srgb, #b68235 55%, transparent);margin:var(--space-6) 0"></div>
+          <p style="max-width:34em;text-align:justify;color:color-mix(in srgb, #f3f2f2 72%, transparent);font-size:15px">Household expenses, income by source, shared project pots and the standing debts between friends — entered once, reconciled monthly, kept on this device.</p>
+        </div>
+        <div style="display:flex;gap:var(--space-8);font-size:12px;letter-spacing:0.08em;text-transform:uppercase;color:color-mix(in srgb, #f3f2f2 55%, transparent)">
+          <span>Est. ledger 2026</span>
+          <span>Dhaka</span>
+        </div>
+      </div>
+      <div style="flex:1 1 54%;display:flex;align-items:center;justify-content:center;padding:var(--space-8) var(--space-4);min-width:0">
+        <form onSubmit="{{ onLogin }}" style="width:min(400px,100%);display:flex;flex-direction:column;gap:var(--space-3)">
+          <h1 style="margin:0;font-weight:400;font-size:38px">Sign in</h1>
+          <p class="text-muted" style="margin:0 0 var(--space-2);font-size:14px">Enter the household ledger. Records are held locally.</p>
+          <div class="field">
+            <label for="lg-email">Account</label>
+            <input class="input" id="lg-email" type="email" autocomplete="username" value="{{ b.email.value }}" onChange="{{ b.email.onChange }}">
+          </div>
+          <div class="field">
+            <label for="lg-pass">Passphrase</label>
+            <input class="input" id="lg-pass" type="password" autocomplete="current-password" value="{{ b.password.value }}" onChange="{{ b.password.onChange }}">
+          </div>
+          <sc-if value="{{ error }}" hint-placeholder-val="">
+            <div style="font-size:13px;color:var(--color-accent-700)">{{ error }}</div>
+          </sc-if>
+          <button class="btn btn-primary btn-block" type="submit" style="min-height:44px">Open the ledger</button>
+          <div class="hr"></div>
+          <div class="text-muted" style="font-size:12px;display:flex;justify-content:space-between;gap:var(--space-2)">
+            <span>Demo credentials are filled in.</span>
+            <a href="#" onClick="{{ noop }}">Forgotten passphrase</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ isApp }}" hint-placeholder-val="{{ true }}">
+    <div class="app-shell">
+      <aside class="side">
+        <div class="side-brand" style="padding:var(--space-2) 10px var(--space-4)">
+          <div style="font-family:var(--font-heading);font-size:20px;font-weight:600">Ledger</div>
+          <div class="text-muted" style="font-size:11px;letter-spacing:0.12em;text-transform:uppercase">{{ userName }}</div>
+        </div>
+        <button class="navitem" data-active="{{ nav.dashboard.active }}" onClick="{{ nav.dashboard.onClick }}" type="button">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect></svg>
+          Dashboard
+        </button>
+        <button class="navitem" data-active="{{ nav.expenses.active }}" onClick="{{ nav.expenses.onClick }}" type="button">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="6" width="20" height="14" rx="2"></rect><path d="M2 11h20"></path><path d="M16 16h3"></path></svg>
+          Expenses
+        </button>
+        <button class="navitem" data-active="{{ nav.income.active }}" onClick="{{ nav.income.onClick }}" type="button">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline><polyline points="16 7 22 7 22 13"></polyline></svg>
+          Income
+        </button>
+        <button class="navitem" data-active="{{ nav.projects.active }}" onClick="{{ nav.projects.onClick }}" type="button">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9.5" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path></svg>
+          Projects
+        </button>
+        <button class="navitem" data-active="{{ nav.debts.active }}" onClick="{{ nav.debts.onClick }}" type="button">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="17 3 21 7 17 11"></polyline><line x1="21" y1="7" x2="3" y2="7"></line><polyline points="7 13 3 17 7 21"></polyline><line x1="3" y1="17" x2="21" y2="17"></line></svg>
+          Debt &amp; lending
+        </button>
+        <button class="navitem" data-active="{{ nav.settings.active }}" onClick="{{ nav.settings.onClick }}" type="button">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line><line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line><line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line><line x1="1" y1="10" x2="7" y2="10"></line><line x1="9" y1="8" x2="15" y2="8"></line><line x1="17" y1="16" x2="23" y2="16"></line></svg>
+          Settings
+        </button>
+        <div class="side-foot" style="margin-top:auto;padding:0 10px">
+          <div class="hr"></div>
+          <div class="text-muted" style="font-size:11px;line-height:1.5">Figures in Bangladeshi taka. Reconciled to {{ monthLabel }}.</div>
+        </div>
+      </aside>
+
+      <main class="main">
+        <header class="topbar">
+          <div style="margin-right:auto;min-width:0">
+            <div style="font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:var(--color-accent)">{{ pageKicker }}</div>
+            <h2 style="margin:2px 0 0;font-weight:400">{{ pageTitle }}</h2>
+          </div>
+          <sc-if value="{{ showMonthPicker }}" hint-placeholder-val="{{ true }}">
+            <div class="field" style="flex:none">
+              <label for="tb-month">Period</label>
+              <select class="input" id="tb-month" style="width:auto;min-width:150px" value="{{ month }}" onChange="{{ onMonthChange }}">
+                <sc-for list="{{ monthOptions }}" as="m" hint-placeholder-count="3">
+                  <option value="{{ m.key }}">{{ m.label }}</option>
+                </sc-for>
+              </select>
+            </div>
+          </sc-if>
+          <button class="btn btn-primary" onClick="{{ openAddExpense }}" type="button" style="min-height:44px">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+            Add expense
+          </button>
+        </header>
+
+        <sc-if value="{{ flash }}" hint-placeholder-val="">
+          <div style="display:flex;align-items:center;gap:var(--space-2);padding:var(--space-2) var(--space-8);border-bottom:1px solid var(--color-divider);background:color-mix(in srgb, var(--color-accent) 7%, transparent);font-size:13px">
+            <span style="color:var(--color-accent-700)">{{ flash }}</span>
+            <button class="rowact" onClick="{{ clearFlash }}" type="button" style="margin-left:auto">Dismiss</button>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isDash }}" hint-placeholder-val="{{ true }}">
+          <div class="pagepad">
+            <sc-if value="{{ hasOverLimit }}" hint-placeholder-val="{{ true }}">
+              <div class="card" style="border-color:var(--color-accent);gap:var(--space-2);flex-direction:row;align-items:flex-start">
+                <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="var(--color-accent)" stroke-width="1.5" style="flex:none;margin-top:2px"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                <div>
+                  <div style="font-family:var(--font-heading);font-weight:600;font-size:16px">Category limits exceeded — {{ monthLabel }}</div>
+                  <div class="text-muted" style="font-size:13px">{{ overLimitNote }}</div>
+                </div>
+              </div>
+            </sc-if>
+
+            <div class="grid g4">
+              <div class="card">
+                <div class="card-kicker">Balance carried</div>
+                <div class="figure">{{ balanceMoney }}</div>
+                <div class="text-muted" style="font-size:12px">All recorded income less all recorded expense</div>
+              </div>
+              <div class="card">
+                <div class="card-kicker">Income — {{ monthShort }}</div>
+                <div class="figure">{{ mIncMoney }}</div>
+                <div class="text-muted" style="font-size:12px">{{ incCountNote }}</div>
+              </div>
+              <div class="card">
+                <div class="card-kicker">Expense — {{ monthShort }}</div>
+                <div class="figure">{{ mExpMoney }}</div>
+                <div class="text-muted" style="font-size:12px">{{ expCountNote }}</div>
+              </div>
+              <div class="card">
+                <div class="card-kicker">Net this period</div>
+                <div class="figure">{{ mNetMoney }}</div>
+                <div class="text-muted" style="font-size:12px">{{ savingsNote }}</div>
+              </div>
+            </div>
+
+            <div class="grid g2">
+              <section class="card" style="gap:var(--space-3)">
+                <div>
+                  <div class="card-kicker">Expenditure by category</div>
+                  <h4 style="margin:2px 0 0;font-weight:400">{{ monthLabel }}</h4>
+                </div>
+                <div style="display:flex;gap:var(--space-4);align-items:center;flex-wrap:wrap">
+                  <div style="position:relative;width:164px;height:164px;flex:none">
+                    <svg viewBox="0 0 140 140" style="width:164px;height:164px;display:block">
+                      <circle cx="70" cy="70" r="52" fill="none" stroke="var(--color-neutral-300)" stroke-width="9"></circle>
+                      <g transform="rotate(-90 70 70)">
+                        <sc-for list="{{ expDonut }}" as="seg" hint-placeholder-count="4">
+                          <circle cx="70" cy="70" r="52" fill="none" stroke="{{ seg.color }}" stroke-width="9" stroke-dasharray="{{ seg.dash }}" stroke-dashoffset="{{ seg.offset }}"></circle>
+                        </sc-for>
+                      </g>
+                    </svg>
+                    <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;pointer-events:none">
+                      <div class="text-muted" style="font-family:var(--font-heading);font-size:10px;letter-spacing:0.14em">SPENT</div>
+                      <div class="tnum" style="font-family:var(--font-heading);font-size:19px;line-height:1">{{ mExpMoney }}</div>
+                    </div>
+                  </div>
+                  <div style="flex:1 1 180px;display:flex;flex-direction:column;gap:6px;min-width:0">
+                    <sc-for list="{{ expDonut }}" as="seg" hint-placeholder-count="5">
+                      <div style="display:flex;align-items:center;gap:8px;font-size:13px">
+                        <span style="width:14px;height:3px;flex:none;background:{{ seg.color }}"></span>
+                        <span style="flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ seg.label }}</span>
+                        <span class="tnum">{{ seg.money }}</span>
+                        <span class="text-muted tnum" style="width:38px;text-align:right">{{ seg.pctLabel }}</span>
+                      </div>
+                    </sc-for>
+                  </div>
+                </div>
+              </section>
+
+              <section class="card" style="gap:var(--space-3)">
+                <div>
+                  <div class="card-kicker">Income by source</div>
+                  <h4 style="margin:2px 0 0;font-weight:400">{{ monthLabel }}</h4>
+                </div>
+                <div style="display:flex;gap:var(--space-4);align-items:center;flex-wrap:wrap">
+                  <svg viewBox="0 0 140 140" style="width:164px;height:164px;flex:none">
+                    <circle cx="70" cy="70" r="52" fill="none" stroke="var(--color-neutral-300)" stroke-width="9"></circle>
+                    <g transform="rotate(-90 70 70)">
+                      <sc-for list="{{ incDonut }}" as="seg" hint-placeholder-count="4">
+                        <circle cx="70" cy="70" r="52" fill="none" stroke="{{ seg.color }}" stroke-width="9" stroke-dasharray="{{ seg.dash }}" stroke-dashoffset="{{ seg.offset }}"></circle>
+                      </sc-for>
+                    </g>
+                    <text x="70" y="66" text-anchor="middle" fill="color-mix(in srgb, var(--color-text) 50%, transparent)" style="font-family:var(--font-heading);font-size:9px;letter-spacing:0.14em">RECEIVED</text>
+                    <text x="70" y="87" text-anchor="middle" fill="#201f1d" style="font-family:var(--font-heading);font-size:17px;font-variant-numeric:tabular-nums">{{ mIncMoney }}</text>
+                  </svg>
+                  <div style="flex:1 1 180px;display:flex;flex-direction:column;gap:6px;min-width:0">
+                    <sc-for list="{{ incDonut }}" as="seg" hint-placeholder-count="4">
+                      <div style="display:flex;align-items:center;gap:8px;font-size:13px">
+                        <span style="width:14px;height:3px;flex:none;background:{{ seg.color }}"></span>
+                        <span style="flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ seg.label }}</span>
+                        <span class="tnum">{{ seg.money }}</span>
+                        <span class="text-muted tnum" style="width:38px;text-align:right">{{ seg.pctLabel }}</span>
+                      </div>
+                    </sc-for>
+                  </div>
+                </div>
+              </section>
+            </div>
+
+            <sc-if value="{{ showTrend }}" hint-placeholder-val="{{ true }}">
+              <section class="card" style="gap:var(--space-3)">
+                <div style="display:flex;align-items:flex-end;gap:var(--space-4);flex-wrap:wrap">
+                  <div style="margin-right:auto">
+                    <div class="card-kicker">Six-month movement</div>
+                    <h4 style="margin:2px 0 0;font-weight:400">Income against expenditure</h4>
+                  </div>
+                  <div style="display:flex;gap:var(--space-4);font-size:12px">
+                    <span style="display:flex;align-items:center;gap:6px"><span style="width:16px;height:2px;background:var(--color-accent)"></span>Income</span>
+                    <span style="display:flex;align-items:center;gap:6px"><span style="width:16px;height:0;border-top:2px dashed var(--color-neutral-700)"></span>Expense</span>
+                  </div>
+                </div>
+                <svg viewBox="0 0 640 196" style="width:100%;height:auto">
+                  <sc-for list="{{ trend.grid }}" as="g" hint-placeholder-count="3">
+                    <g>
+                      <line x1="48" y1="{{ g.y }}" x2="624" y2="{{ g.y }}" stroke="var(--color-divider)" stroke-width="1"></line>
+                      <text x="40" y="{{ g.ty }}" text-anchor="end" fill="color-mix(in srgb, var(--color-text) 45%, transparent)" class="tnum" style="font-family:var(--font-body);font-size:10px">{{ g.label }}</text>
+                    </g>
+                  </sc-for>
+                  <polyline fill="none" stroke="var(--color-accent)" stroke-width="2" points="{{ trend.incPoints }}"></polyline>
+                  <polyline fill="none" stroke="var(--color-neutral-700)" stroke-width="2" stroke-dasharray="5 4" points="{{ trend.expPoints }}"></polyline>
+                  <sc-for list="{{ trend.points }}" as="p" hint-placeholder-count="6">
+                    <g>
+                      <circle cx="{{ p.x }}" cy="{{ p.iy }}" r="3.5" fill="var(--color-bg)" stroke="var(--color-accent)" stroke-width="2"></circle>
+                      <circle cx="{{ p.x }}" cy="{{ p.ey }}" r="3" fill="var(--color-neutral-700)"></circle>
+                      <text x="{{ p.x }}" y="190" text-anchor="middle" fill="color-mix(in srgb, var(--color-text) 55%, transparent)" style="font-family:var(--font-body);font-size:11px">{{ p.label }}</text>
+                    </g>
+                  </sc-for>
+                </svg>
+              </section>
+            </sc-if>
+
+            <div class="grid g2">
+              <section class="card" style="gap:var(--space-3)">
+                <div>
+                  <div class="card-kicker">Against category limits</div>
+                  <h4 style="margin:2px 0 0;font-weight:400">{{ monthLabel }}</h4>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:var(--space-3)">
+                  <sc-for list="{{ budgets }}" as="bd" hint-placeholder-count="6">
+                    <div>
+                      <div style="display:flex;align-items:baseline;gap:8px;font-size:13px;margin-bottom:5px">
+                        <span style="flex:1 1 auto;min-width:0">{{ bd.name }}</span>
+                        <span class="tnum">{{ bd.spent }}</span>
+                        <span class="text-muted tnum">of {{ bd.limit }}</span>
+                      </div>
+                      <div style="height:7px;border:1px solid var(--color-divider);border-radius:2px;overflow:hidden">
+                        <div style="height:100%;width:{{ bd.width }};background:{{ bd.color }}"></div>
+                      </div>
+                    </div>
+                  </sc-for>
+                </div>
+              </section>
+
+              <section class="card" style="gap:var(--space-3)">
+                <div>
+                  <div class="card-kicker">Standing accounts</div>
+                  <h4 style="margin:2px 0 0;font-weight:400">Owed to me, and owed by me</h4>
+                </div>
+                <div style="display:flex;gap:var(--space-4);flex-wrap:wrap">
+                  <div style="flex:1 1 120px;border-left:2px solid var(--color-accent);padding-left:var(--space-3)">
+                    <div class="text-muted" style="font-size:11px;letter-spacing:0.1em;text-transform:uppercase">Receivable</div>
+                    <div class="figure" style="font-size:24px">{{ lentMoney }}</div>
+                    <div class="text-muted" style="font-size:12px">{{ lentNote }}</div>
+                  </div>
+                  <div style="flex:1 1 120px;border-left:2px solid var(--color-neutral-700);padding-left:var(--space-3)">
+                    <div class="text-muted" style="font-size:11px;letter-spacing:0.1em;text-transform:uppercase">Payable</div>
+                    <div class="figure" style="font-size:24px">{{ borrowedMoney }}</div>
+                    <div class="text-muted" style="font-size:12px">{{ borrowedNote }}</div>
+                  </div>
+                </div>
+                <div class="hr" style="margin:var(--space-1) 0"></div>
+                <div style="display:flex;flex-direction:column;gap:8px">
+                  <sc-for list="{{ openDebts }}" as="dbt" hint-placeholder-count="3">
+                    <div style="display:flex;align-items:baseline;gap:8px;font-size:13px">
+                      <span class="tag {{ dbt.tag }}" style="flex:none">{{ dbt.kindLabel }}</span>
+                      <span style="flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ dbt.person }}</span>
+                      <span class="text-muted" style="font-size:12px">{{ dbt.dueLabel }}</span>
+                      <span class="tnum">{{ dbt.money }}</span>
+                    </div>
+                  </sc-for>
+                </div>
+                <button class="btn btn-secondary" onClick="{{ nav.debts.onClick }}" type="button" style="align-self:flex-start;min-height:40px">Open the debt register</button>
+              </section>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isExp }}" hint-placeholder-val="{{ true }}">
+          <div class="pagepad">
+            <div style="display:flex;gap:var(--space-2);flex-wrap:wrap;align-items:center">
+              <button class="btn btn-primary" onClick="{{ openAddExpense }}" type="button" style="min-height:44px">Add expense</button>
+              <button class="btn btn-secondary" onClick="{{ openAddExpenseCat }}" type="button" style="min-height:44px">Add budget category</button>
+              <div class="text-muted" style="margin-left:auto;font-size:13px">{{ expRowsNote }}</div>
+            </div>
+            <section class="card" style="padding:0;overflow:hidden">
+              <div class="tw">
+                <table class="table">
+                  <thead>
+                    <tr>
+                      <th style="width:110px">Date</th>
+                      <th style="width:150px">Category</th>
+                      <th>Particulars</th>
+                      <th style="width:110px">Method</th>
+                      <th style="width:120px;text-align:right">Amount</th>
+                      <th style="width:70px"></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <sc-for list="{{ expRows }}" as="r" hint-placeholder-count="8">
+                      <tr>
+                        <td class="tnum" style="white-space:nowrap">{{ r.date }}</td>
+                        <td>{{ r.cat }}</td>
+                        <td>{{ r.note }}</td>
+                        <td class="text-muted">{{ r.method }}</td>
+                        <td class="tnum" style="text-align:right">{{ r.money }}</td>
+                        <td style="text-align:right"><button class="rowact" onClick="{{ r.onDelete }}" type="button">Void</button></td>
+                      </tr>
+                    </sc-for>
+                  </tbody>
+                  <tfoot>
+                    <tr>
+                      <td colspan="4" style="font-family:var(--font-heading);font-weight:600">Total, {{ monthLabel }}</td>
+                      <td class="tnum" style="text-align:right;font-family:var(--font-heading);font-weight:600">{{ mExpMoney }}</td>
+                      <td></td>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
+            </section>
+            <section class="card" style="gap:var(--space-3)">
+              <div class="card-kicker">Budget categories &amp; monthly limits</div>
+              <div class="grid g3" style="gap:var(--space-3)">
+                <sc-for list="{{ budgets }}" as="bd" hint-placeholder-count="6">
+                  <div style="border-left:2px solid {{ bd.color }};padding-left:var(--space-3)">
+                    <div style="font-family:var(--font-heading);font-weight:600;font-size:15px">{{ bd.name }}</div>
+                    <div class="tnum" style="font-size:13px">{{ bd.spent }} <span class="text-muted">of {{ bd.limit }}</span></div>
+                    <div class="text-muted" style="font-size:12px">{{ bd.status }}</div>
+                  </div>
+                </sc-for>
+              </div>
+            </section>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isInc }}" hint-placeholder-val="{{ true }}">
+          <div class="pagepad">
+            <div style="display:flex;gap:var(--space-2);flex-wrap:wrap;align-items:center">
+              <button class="btn btn-primary" onClick="{{ openAddIncome }}" type="button" style="min-height:44px">Add income</button>
+              <button class="btn btn-secondary" onClick="{{ openAddIncomeCat }}" type="button" style="min-height:44px">Add income category</button>
+              <div class="text-muted" style="margin-left:auto;font-size:13px">{{ incRowsNote }}</div>
+            </div>
+            <section class="card" style="padding:0;overflow:hidden">
+              <div class="tw">
+                <table class="table">
+                  <thead>
+                    <tr>
+                      <th style="width:110px">Date</th>
+                      <th style="width:170px">Source</th>
+                      <th>Particulars</th>
+                      <th style="width:120px;text-align:right">Amount</th>
+                      <th style="width:70px"></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <sc-for list="{{ incRows }}" as="r" hint-placeholder-count="5">
+                      <tr>
+                        <td class="tnum" style="white-space:nowrap">{{ r.date }}</td>
+                        <td>{{ r.cat }}</td>
+                        <td>{{ r.note }}</td>
+                        <td class="tnum" style="text-align:right">{{ r.money }}</td>
+                        <td style="text-align:right"><button class="rowact" onClick="{{ r.onDelete }}" type="button">Void</button></td>
+                      </tr>
+                    </sc-for>
+                  </tbody>
+                  <tfoot>
+                    <tr>
+                      <td colspan="3" style="font-family:var(--font-heading);font-weight:600">Total, {{ monthLabel }}</td>
+                      <td class="tnum" style="text-align:right;font-family:var(--font-heading);font-weight:600">{{ mIncMoney }}</td>
+                      <td></td>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
+            </section>
+            <section class="card" style="gap:var(--space-3)">
+              <div class="card-kicker">Income categories</div>
+              <div style="display:flex;gap:var(--space-2);flex-wrap:wrap">
+                <sc-for list="{{ incCats }}" as="c" hint-placeholder-count="4">
+                  <span class="tag tag-outline">{{ c.name }}</span>
+                </sc-for>
+              </div>
+            </section>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isProj }}" hint-placeholder-val="{{ true }}">
+          <div class="pagepad">
+            <div style="display:flex;gap:var(--space-2);flex-wrap:wrap;align-items:center">
+              <button class="btn btn-primary" onClick="{{ openNewProject }}" type="button" style="min-height:44px">Create project</button>
+              <div class="text-muted" style="margin-left:auto;font-size:13px">{{ projSummary }}</div>
+            </div>
+            <div class="grid g2">
+              <sc-for list="{{ projects }}" as="p" hint-placeholder-count="3">
+                <section class="card" style="gap:var(--space-3)">
+                  <div>
+                    <div class="card-kicker">Shared pot</div>
+                    <h4 style="margin:2px 0 0;font-weight:400">{{ p.name }}</h4>
+                    <p class="text-muted" style="margin:6px 0 0;font-size:13px">{{ p.note }}</p>
+                  </div>
+                  <div>
+                    <div style="display:flex;align-items:baseline;gap:8px;font-size:13px;margin-bottom:5px">
+                      <span class="tnum" style="font-family:var(--font-heading);font-size:19px">{{ p.raised }}</span>
+                      <span class="text-muted tnum">raised of {{ p.target }}</span>
+                      <span class="tnum" style="margin-left:auto;color:var(--color-accent-700)">{{ p.pctLabel }}</span>
+                    </div>
+                    <div style="height:7px;border:1px solid var(--color-divider);border-radius:2px;overflow:hidden">
+                      <div style="height:100%;width:{{ p.width }};background:var(--color-accent)"></div>
+                    </div>
+                  </div>
+                  <div style="display:flex;gap:var(--space-4);flex-wrap:wrap;border-top:1px solid var(--color-divider);border-bottom:1px solid var(--color-divider);padding:var(--space-2) 0">
+                    <div>
+                      <div class="text-muted" style="font-size:11px;letter-spacing:0.1em;text-transform:uppercase">My contribution</div>
+                      <div class="tnum" style="font-family:var(--font-heading);font-size:18px">{{ p.mine }}</div>
+                    </div>
+                    <div>
+                      <div class="text-muted" style="font-size:11px;letter-spacing:0.1em;text-transform:uppercase">My share of the pot</div>
+                      <div class="tnum" style="font-family:var(--font-heading);font-size:18px">{{ p.minePctLabel }}</div>
+                    </div>
+                    <div>
+                      <div class="text-muted" style="font-size:11px;letter-spacing:0.1em;text-transform:uppercase">Members</div>
+                      <div class="tnum" style="font-family:var(--font-heading);font-size:18px">{{ p.memberCount }}</div>
+                    </div>
+                  </div>
+                  <div style="display:flex;gap:var(--space-2);flex-wrap:wrap">
+                    <sc-for list="{{ p.members }}" as="m" hint-placeholder-count="4">
+                      <span class="tag {{ m.tag }}">{{ m.name }}</span>
+                    </sc-for>
+                  </div>
+                  <div class="tw">
+                    <table class="table" style="min-width:420px">
+                      <thead>
+                        <tr>
+                          <th>Member</th>
+                          <th style="width:150px">Transaction ID</th>
+                          <th style="width:110px;text-align:right">Amount</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <sc-for list="{{ p.contribs }}" as="c" hint-placeholder-count="3">
+                          <tr>
+                            <td>{{ c.member }} <span class="text-muted" style="font-size:12px">{{ c.dateLabel }}</span></td>
+                            <td class="tnum text-muted" style="font-size:12px">{{ c.txn }}</td>
+                            <td class="tnum" style="text-align:right">{{ c.money }}</td>
+                          </tr>
+                        </sc-for>
+                      </tbody>
+                    </table>
+                  </div>
+                  <div style="display:flex;gap:var(--space-2);flex-wrap:wrap">
+                    <button class="btn btn-primary" onClick="{{ p.onContribute }}" type="button" style="min-height:44px">Add contribution</button>
+                    <button class="btn btn-secondary" onClick="{{ p.onAddMember }}" type="button" style="min-height:44px">Add member</button>
+                  </div>
+                </section>
+              </sc-for>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isDebt }}" hint-placeholder-val="{{ true }}">
+          <div class="pagepad">
+            <div style="display:flex;gap:var(--space-2);flex-wrap:wrap;align-items:center">
+              <button class="btn btn-primary" onClick="{{ openAddDebt }}" type="button" style="min-height:44px">Record debt or lending</button>
+              <div class="text-muted" style="margin-left:auto;font-size:13px">{{ debtSummary }}</div>
+            </div>
+            <div class="grid g3">
+              <div class="card">
+                <div class="card-kicker">Receivable — owed to me</div>
+                <div class="figure">{{ lentMoney }}</div>
+                <div class="text-muted" style="font-size:12px">{{ lentNote }}</div>
+              </div>
+              <div class="card">
+                <div class="card-kicker">Payable — owed by me</div>
+                <div class="figure">{{ borrowedMoney }}</div>
+                <div class="text-muted" style="font-size:12px">{{ borrowedNote }}</div>
+              </div>
+              <div class="card">
+                <div class="card-kicker">Net position</div>
+                <div class="figure">{{ netDebtMoney }}</div>
+                <div class="text-muted" style="font-size:12px">{{ netDebtNote }}</div>
+              </div>
+            </div>
+            <section class="card" style="padding:0;overflow:hidden">
+              <div class="tw">
+                <table class="table">
+                  <thead>
+                    <tr>
+                      <th style="width:110px">Kind</th>
+                      <th style="width:170px">Counterparty</th>
+                      <th>Particulars</th>
+                      <th style="width:110px">Due</th>
+                      <th style="width:120px;text-align:right">Amount</th>
+                      <th style="width:110px;text-align:right">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <sc-for list="{{ debtRows }}" as="r" hint-placeholder-count="5">
+                      <tr>
+                        <td><span class="tag {{ r.tag }}">{{ r.kindLabel }}</span></td>
+                        <td>{{ r.person }}</td>
+                        <td class="text-muted">{{ r.note }}</td>
+                        <td class="tnum" style="white-space:nowrap">{{ r.dueLabel }}</td>
+                        <td class="tnum" style="text-align:right">{{ r.money }}</td>
+                        <td style="text-align:right">
+                          <sc-if value="{{ r.open }}" hint-placeholder-val="{{ true }}">
+                            <button class="btn btn-ghost" onClick="{{ r.onSettle }}" type="button" style="font-size:13px">Settle</button>
+                          </sc-if>
+                          <sc-if value="{{ r.settled }}" hint-placeholder-val="">
+                            <span class="text-muted" style="font-size:12px">Settled</span>
+                          </sc-if>
+                        </td>
+                      </tr>
+                    </sc-for>
+                  </tbody>
+                </table>
+              </div>
+            </section>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isSet }}" hint-placeholder-val="{{ true }}">
+          <div class="pagepad">
+            <div class="grid g2">
+              <section class="card" style="gap:var(--space-3)">
+                <div>
+                  <div class="card-kicker">Limits per expense category</div>
+                  <h4 style="margin:2px 0 0;font-weight:400">Monthly ceilings</h4>
+                  <p class="text-muted" style="margin:6px 0 0;font-size:13px">A category above its ceiling raises a notice on the dashboard for that period.</p>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:var(--space-2)">
+                  <sc-for list="{{ limitRows }}" as="l" hint-placeholder-count="6">
+                    <div style="display:flex;align-items:center;gap:var(--space-3);border-bottom:1px solid var(--color-divider);padding-bottom:var(--space-2)">
+                      <div style="flex:1 1 auto;min-width:0">
+                        <div style="font-family:var(--font-heading);font-weight:600;font-size:15px">{{ l.name }}</div>
+                        <div class="text-muted tnum" style="font-size:12px">{{ l.spentLabel }}</div>
+                      </div>
+                      <input class="input tnum" type="number" min="0" step="500" style="width:120px;text-align:right" value="{{ l.value }}" onChange="{{ l.onChange }}">
+                      <button class="rowact" onClick="{{ l.onRemove }}" type="button">Remove</button>
+                    </div>
+                  </sc-for>
+                </div>
+                <button class="btn btn-secondary" onClick="{{ openAddExpenseCat }}" type="button" style="align-self:flex-start;min-height:44px">Add budget category</button>
+              </section>
+
+              <div style="display:flex;flex-direction:column;gap:var(--space-4)">
+                <section class="card" style="gap:var(--space-3)">
+                  <div class="card-kicker">Account</div>
+                  <div>
+                    <div style="font-family:var(--font-heading);font-size:22px">{{ userName }}</div>
+                    <div class="text-muted" style="font-size:13px">{{ userEmail }}</div>
+                  </div>
+                  <div class="hr" style="margin:0"></div>
+                  <div class="text-muted" style="font-size:13px">Currency: Bangladeshi taka ({{ currencySymbol }}). Records are held on this device only.</div>
+                  <div style="display:flex;gap:var(--space-2);flex-wrap:wrap">
+                    <button class="btn btn-primary" onClick="{{ onLogout }}" type="button" style="min-height:44px">
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                      Log out
+                    </button>
+                    <button class="btn btn-secondary" onClick="{{ onReset }}" type="button" style="min-height:44px">Restore demo records</button>
+                  </div>
+                </section>
+                <section class="card" style="gap:var(--space-3)">
+                  <div class="card-kicker">Income categories</div>
+                  <div style="display:flex;flex-direction:column;gap:6px">
+                    <sc-for list="{{ incCats }}" as="c" hint-placeholder-count="4">
+                      <div style="display:flex;align-items:center;gap:var(--space-2);font-size:14px;border-bottom:1px solid var(--color-divider);padding-bottom:6px">
+                        <span style="flex:1 1 auto">{{ c.name }}</span>
+                        <button class="rowact" onClick="{{ c.onRemove }}" type="button">Remove</button>
+                      </div>
+                    </sc-for>
+                  </div>
+                  <button class="btn btn-secondary" onClick="{{ openAddIncomeCat }}" type="button" style="align-self:flex-start;min-height:44px">Add income category</button>
+                </section>
+              </div>
+            </div>
+          </div>
+        </sc-if>
+      </main>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ modalOpen }}" hint-placeholder-val="">
+    <div class="dialog-backdrop" onClick="{{ onBackdrop }}">
+      <form class="dialog" onSubmit="{{ onSubmit }}" onClick="{{ stop }}">
+        <div>
+          <div class="card-kicker">{{ modalKicker }}</div>
+          <div class="dialog-title">{{ modalTitle }}</div>
+        </div>
+
+        <sc-if value="{{ mExpense }}" hint-placeholder-val="">
+          <div style="display:flex;flex-direction:column;gap:var(--space-3)">
+            <div style="display:flex;gap:var(--space-3);flex-wrap:wrap">
+              <div class="field" style="flex:1 1 130px">
+                <label for="m-date">Date</label>
+                <input class="input" id="m-date" type="date" value="{{ b.date.value }}" onChange="{{ b.date.onChange }}">
+              </div>
+              <div class="field" style="flex:1 1 130px">
+                <label for="m-amount">Amount ({{ currencySymbol }})</label>
+                <input class="input tnum" id="m-amount" type="number" min="0" step="1" placeholder="0" value="{{ b.amount.value }}" onChange="{{ b.amount.onChange }}">
+              </div>
+            </div>
+            <div class="field">
+              <label for="m-cat">Budget category</label>
+              <select class="input" id="m-cat" value="{{ b.cat.value }}" onChange="{{ b.cat.onChange }}">
+                <sc-for list="{{ expCats }}" as="c" hint-placeholder-count="6">
+                  <option value="{{ c.name }}">{{ c.name }}</option>
+                </sc-for>
+              </select>
+            </div>
+            <div class="field">
+              <label for="m-method">Method</label>
+              <select class="input" id="m-method" value="{{ b.method.value }}" onChange="{{ b.method.onChange }}">
+                <sc-for list="{{ methods }}" as="m" hint-placeholder-count="4">
+                  <option value="{{ m }}">{{ m }}</option>
+                </sc-for>
+              </select>
+            </div>
+            <div class="field">
+              <label for="m-note">Particulars</label>
+              <input class="input" id="m-note" type="text" placeholder="Monthly staples, Agora" value="{{ b.note.value }}" onChange="{{ b.note.onChange }}">
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ mIncome }}" hint-placeholder-val="">
+          <div style="display:flex;flex-direction:column;gap:var(--space-3)">
+            <div style="display:flex;gap:var(--space-3);flex-wrap:wrap">
+              <div class="field" style="flex:1 1 130px">
+                <label for="mi-date">Date</label>
+                <input class="input" id="mi-date" type="date" value="{{ b.date.value }}" onChange="{{ b.date.onChange }}">
+              </div>
+              <div class="field" style="flex:1 1 130px">
+                <label for="mi-amount">Amount ({{ currencySymbol }})</label>
+                <input class="input tnum" id="mi-amount" type="number" min="0" step="1" placeholder="0" value="{{ b.amount.value }}" onChange="{{ b.amount.onChange }}">
+              </div>
+            </div>
+            <div class="field">
+              <label for="mi-cat">Source</label>
+              <select class="input" id="mi-cat" value="{{ b.cat.value }}" onChange="{{ b.cat.onChange }}">
+                <sc-for list="{{ incCats }}" as="c" hint-placeholder-count="4">
+                  <option value="{{ c.name }}">{{ c.name }}</option>
+                </sc-for>
+              </select>
+            </div>
+            <div class="field">
+              <label for="mi-note">Particulars</label>
+              <input class="input" id="mi-note" type="text" placeholder="August payroll" value="{{ b.note.value }}" onChange="{{ b.note.onChange }}">
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ mExpCat }}" hint-placeholder-val="">
+          <div style="display:flex;gap:var(--space-3);flex-wrap:wrap">
+            <div class="field" style="flex:1 1 160px">
+              <label for="mc-name">Category name</label>
+              <input class="input" id="mc-name" type="text" placeholder="Schooling" value="{{ b.name.value }}" onChange="{{ b.name.onChange }}">
+            </div>
+            <div class="field" style="flex:1 1 130px">
+              <label for="mc-limit">Monthly limit ({{ currencySymbol }})</label>
+              <input class="input tnum" id="mc-limit" type="number" min="0" step="500" placeholder="5000" value="{{ b.limit.value }}" onChange="{{ b.limit.onChange }}">
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ mIncCat }}" hint-placeholder-val="">
+          <div class="field">
+            <label for="mn-name">Source name</label>
+            <input class="input" id="mn-name" type="text" placeholder="Tuition fees" value="{{ b.name.value }}" onChange="{{ b.name.onChange }}">
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ mProject }}" hint-placeholder-val="">
+          <div style="display:flex;flex-direction:column;gap:var(--space-3)">
+            <div class="field">
+              <label for="mp-name">Project name</label>
+              <input class="input" id="mp-name" type="text" placeholder="Cox's Bazar, December" value="{{ b.name.value }}" onChange="{{ b.name.onChange }}">
+            </div>
+            <div class="field">
+              <label for="mp-target">Target pot ({{ currencySymbol }})</label>
+              <input class="input tnum" id="mp-target" type="number" min="0" step="1000" placeholder="50000" value="{{ b.target.value }}" onChange="{{ b.target.onChange }}">
+            </div>
+            <div class="field">
+              <label for="mp-note">Note</label>
+              <input class="input" id="mp-note" type="text" placeholder="Four households, three nights." value="{{ b.note.value }}" onChange="{{ b.note.onChange }}">
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ mMember }}" hint-placeholder-val="">
+          <div class="field">
+            <label for="mm-name">Member name</label>
+            <input class="input" id="mm-name" type="text" placeholder="Shirin Ara" value="{{ b.name.value }}" onChange="{{ b.name.onChange }}">
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ mContrib }}" hint-placeholder-val="">
+          <div style="display:flex;flex-direction:column;gap:var(--space-3)">
+            <div class="field">
+              <label for="mk-member">Contributor</label>
+              <select class="input" id="mk-member" value="{{ b.member.value }}" onChange="{{ b.member.onChange }}">
+                <sc-for list="{{ modalMembers }}" as="m" hint-placeholder-count="4">
+                  <option value="{{ m }}">{{ m }}</option>
+                </sc-for>
+              </select>
+            </div>
+            <div style="display:flex;gap:var(--space-3);flex-wrap:wrap">
+              <div class="field" style="flex:1 1 130px">
+                <label for="mk-amount">Amount ({{ currencySymbol }})</label>
+                <input class="input tnum" id="mk-amount" type="number" min="0" step="100" placeholder="0" value="{{ b.amount.value }}" onChange="{{ b.amount.onChange }}">
+              </div>
+              <div class="field" style="flex:1 1 150px">
+                <label for="mk-txn">Transaction ID</label>
+                <input class="input tnum" id="mk-txn" type="text" placeholder="TRX-8842019" value="{{ b.txn.value }}" onChange="{{ b.txn.onChange }}">
+              </div>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ mDebt }}" hint-placeholder-val="">
+          <div style="display:flex;flex-direction:column;gap:var(--space-3)">
+            <div class="field">
+              <label>Kind</label>
+              <div class="seg">
+                <label class="seg-opt">
+                  <input type="radio" name="dkind" value="lent" checked="{{ kindLent }}" onChange="{{ setLent }}">
+                  I lent it out
+                </label>
+                <label class="seg-opt">
+                  <input type="radio" name="dkind" value="borrowed" checked="{{ kindBorrowed }}" onChange="{{ setBorrowed }}">
+                  I borrowed it
+                </label>
+              </div>
+            </div>
+            <div style="display:flex;gap:var(--space-3);flex-wrap:wrap">
+              <div class="field" style="flex:1 1 160px">
+                <label for="md-person">Counterparty</label>
+                <input class="input" id="md-person" type="text" placeholder="Rashed Karim" value="{{ b.person.value }}" onChange="{{ b.person.onChange }}">
+              </div>
+              <div class="field" style="flex:1 1 120px">
+                <label for="md-amount">Amount ({{ currencySymbol }})</label>
+                <input class="input tnum" id="md-amount" type="number" min="0" step="100" placeholder="0" value="{{ b.amount.value }}" onChange="{{ b.amount.onChange }}">
+              </div>
+            </div>
+            <div style="display:flex;gap:var(--space-3);flex-wrap:wrap">
+              <div class="field" style="flex:1 1 130px">
+                <label for="md-due">Due</label>
+                <input class="input" id="md-due" type="date" value="{{ b.due.value }}" onChange="{{ b.due.onChange }}">
+              </div>
+              <div class="field" style="flex:1 1 160px">
+                <label for="md-note">Particulars</label>
+                <input class="input" id="md-note" type="text" placeholder="Bridge until salary" value="{{ b.note.value }}" onChange="{{ b.note.onChange }}">
+              </div>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ error }}" hint-placeholder-val="">
+          <div style="font-size:13px;color:var(--color-accent-700)">{{ error }}</div>
+        </sc-if>
+
+        <div class="dialog-actions">
+          <button class="btn btn-secondary" type="button" onClick="{{ closeModal }}" style="min-height:44px">Cancel</button>
+          <button class="btn btn-primary" type="submit" style="min-height:44px">{{ modalAction }}</button>
+        </div>
+      </form>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1360,&quot;height&quot;:900},&quot;startScreen&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;Login&quot;,&quot;Dashboard&quot;],&quot;default&quot;:&quot;Login&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Behaviour&quot;},&quot;showTrend&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Dashboard&quot;},&quot;density&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;Comfortable&quot;,&quot;Compact&quot;],&quot;default&quot;:&quot;Comfortable&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Tables&quot;},&quot;currencySymbol&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;৳&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Behaviour&quot;}}">
+class Component extends DCLogic {
+  key = 'ledger.expense.v1';
+  me = 'Nayeem Hasan';
+  colors = ['#b68235', '#605d5d', '#e1ad66', '#7d5411', '#bab6b6', '#c28d41', '#3a270d', '#9b9797'];
+  methods = ['Cash', 'bKash', 'Card', 'Bank transfer'];
+  state = {
+    screen: 'login',
+    month: '2026-08',
+    modal: null,
+    form: { email: 'n.hasan@ledger.bd', password: 'ledger2026' },
+    error: '',
+    flash: '',
+    data: this.loadData()
+  };
+
+  componentDidMount() {
+    if (this.props.startScreen === 'Dashboard') this.setState({ screen: 'dashboard' });
+  }
+
+  loadData() {
+    try {
+      const raw = localStorage.getItem('ledger.expense.v1');
+      if (raw) {
+        const p = JSON.parse(raw);
+        if (p && p.expenses) return p;
+      }
+    } catch (e) {}
+    return this.seed();
+  }
+  persist(data) { try { localStorage.setItem(this.key, JSON.stringify(data)); } catch (e) {} }
+  edit(fn) {
+    this.setState(s => {
+      const data = fn(JSON.parse(JSON.stringify(s.data)));
+      this.persist(data);
+      return { data };
+    });
+  }
+
+  seed() {
+    return {
+      user: { name: this.me, email: 'n.hasan@ledger.bd' },
+      expenseCats: [
+        { id: 'c1', name: 'Groceries', limit: 12000 },
+        { id: 'c2', name: 'Transport', limit: 4500 },
+        { id: 'c3', name: 'Utilities', limit: 6000 },
+        { id: 'c4', name: 'Dining', limit: 5000 },
+        { id: 'c5', name: 'Health', limit: 3000 },
+        { id: 'c6', name: 'Household', limit: 8000 }
+      ],
+      incomeCats: [
+        { id: 'i1', name: 'Salary' },
+        { id: 'i2', name: 'Freelance' },
+        { id: 'i3', name: 'Rent received' },
+        { id: 'i4', name: 'Dividends' }
+      ],
+      expenses: [
+        { id: 'e1', date: '2026-08-02', cat: 'Groceries', amount: 4820, note: 'Monthly staples, Agora', method: 'bKash' },
+        { id: 'e2', date: '2026-08-03', cat: 'Utilities', amount: 2310, note: 'Electricity, July cycle', method: 'Bank transfer' },
+        { id: 'e3', date: '2026-08-05', cat: 'Transport', amount: 900, note: 'CNG fares', method: 'Cash' },
+        { id: 'e4', date: '2026-08-07', cat: 'Dining', amount: 3150, note: 'Family dinner, Dhanmondi', method: 'Card' },
+        { id: 'e5', date: '2026-08-09', cat: 'Household', amount: 6400, note: 'Ceiling fan replacement', method: 'Card' },
+        { id: 'e6', date: '2026-08-11', cat: 'Groceries', amount: 5260, note: 'Fish and produce, Karwan Bazar', method: 'Cash' },
+        { id: 'e7', date: '2026-08-13', cat: 'Health', amount: 1450, note: 'Pharmacy', method: 'Cash' },
+        { id: 'e8', date: '2026-08-15', cat: 'Transport', amount: 2100, note: 'Ride-share, office week', method: 'bKash' },
+        { id: 'e9', date: '2026-08-16', cat: 'Dining', amount: 2280, note: 'Supper with cousins', method: 'bKash' },
+        { id: 'e10', date: '2026-08-17', cat: 'Groceries', amount: 3120, note: 'Weekly market', method: 'Cash' },
+        { id: 'e11', date: '2026-08-18', cat: 'Utilities', amount: 1780, note: 'Internet and gas', method: 'Bank transfer' },
+        { id: 'e12', date: '2026-07-04', cat: 'Groceries', amount: 11240, note: 'July provisions', method: 'Cash' },
+        { id: 'e13', date: '2026-07-08', cat: 'Utilities', amount: 5120, note: 'Electricity and water', method: 'Bank transfer' },
+        { id: 'e14', date: '2026-07-12', cat: 'Transport', amount: 3900, note: 'Monthly commuting', method: 'bKash' },
+        { id: 'e15', date: '2026-07-16', cat: 'Dining', amount: 4600, note: 'Two dinners out', method: 'Card' },
+        { id: 'e16', date: '2026-07-21', cat: 'Household', amount: 5200, note: 'Bedding and repairs', method: 'Card' },
+        { id: 'e17', date: '2026-07-26', cat: 'Health', amount: 2600, note: 'Dental consultation', method: 'Cash' }
+      ],
+      incomes: [
+        { id: 'n1', date: '2026-08-01', cat: 'Salary', amount: 82000, note: 'August payroll' },
+        { id: 'n2', date: '2026-08-06', cat: 'Freelance', amount: 24500, note: 'Brand identity, Meridian Co.' },
+        { id: 'n3', date: '2026-08-12', cat: 'Rent received', amount: 15000, note: 'Mirpur flat, August' },
+        { id: 'n4', date: '2026-08-14', cat: 'Dividends', amount: 3400, note: 'Mutual fund payout' },
+        { id: 'n5', date: '2026-07-01', cat: 'Salary', amount: 82000, note: 'July payroll' },
+        { id: 'n6', date: '2026-07-09', cat: 'Freelance', amount: 18000, note: 'Catalogue layout' },
+        { id: 'n7', date: '2026-07-12', cat: 'Rent received', amount: 15000, note: 'Mirpur flat, July' }
+      ],
+      projects: [
+        {
+          id: 'p1', name: 'Sylhet retreat, August', target: 90000,
+          note: 'Four households, three nights, transport shared.',
+          members: [this.me, 'Farhana Rahim', 'Rashed Karim', 'Tanvir Alam'],
+          contribs: [
+            { id: 'k1', member: this.me, amount: 22000, txn: 'TRX-8842019', date: '2026-07-28' },
+            { id: 'k2', member: 'Farhana Rahim', amount: 18000, txn: 'TRX-8843771', date: '2026-07-30' },
+            { id: 'k3', member: 'Rashed Karim', amount: 15000, txn: 'BK-2290145', date: '2026-08-02' },
+            { id: 'k4', member: 'Tanvir Alam', amount: 12000, txn: 'TRX-8851002', date: '2026-08-06' }
+          ]
+        },
+        {
+          id: 'p2', name: 'Eid feast fund', target: 35000,
+          note: 'Catering and sweets for the extended family.',
+          members: [this.me, 'Farhana Rahim', 'Shirin Ara'],
+          contribs: [
+            { id: 'k5', member: this.me, amount: 9000, txn: 'TRX-8798110', date: '2026-07-11' },
+            { id: 'k6', member: 'Shirin Ara', amount: 7500, txn: 'BK-2270998', date: '2026-07-14' },
+            { id: 'k7', member: 'Farhana Rahim', amount: 6000, txn: 'TRX-8801422', date: '2026-07-19' }
+          ]
+        },
+        {
+          id: 'p3', name: 'Rooftop garden', target: 25000,
+          note: 'Planters, soil and a standing tap for the roof.',
+          members: [this.me, 'Tanvir Alam'],
+          contribs: [
+            { id: 'k8', member: this.me, amount: 6000, txn: 'TRX-8860334', date: '2026-08-04' },
+            { id: 'k9', member: 'Tanvir Alam', amount: 4500, txn: 'BK-2301877', date: '2026-08-10' }
+          ]
+        }
+      ],
+      debts: [
+        { id: 'd1', kind: 'lent', person: 'Rashed Karim', amount: 12000, date: '2026-07-19', due: '2026-09-01', note: 'Bridge until his salary', settled: false },
+        { id: 'd2', kind: 'borrowed', person: 'Mother', amount: 25000, date: '2026-06-11', due: '2026-10-01', note: 'Toward the flat deposit', settled: false },
+        { id: 'd3', kind: 'lent', person: 'Shirin Ara', amount: 4500, date: '2026-08-05', due: '2026-08-30', note: 'Concert tickets', settled: false },
+        { id: 'd4', kind: 'borrowed', person: 'Farhana Rahim', amount: 6000, date: '2026-07-02', due: '2026-08-15', note: 'Cab share settlement', settled: false },
+        { id: 'd5', kind: 'lent', person: 'Tanvir Alam', amount: 8000, date: '2026-05-02', due: '2026-06-15', note: 'Repaid in full', settled: true }
+      ],
+      history: [
+        { label: 'Mar', inc: 112000, exp: 71000 },
+        { label: 'Apr', inc: 104500, exp: 82400 },
+        { label: 'May', inc: 121000, exp: 68900 },
+        { label: 'Jun', inc: 109800, exp: 77600 }
+      ]
+    };
+  }
+
+  sym() { return this.props.currencySymbol ?? '৳'; }
+  fmt(n) { return this.sym() + Math.round(n || 0).toLocaleString('en-US'); }
+  sum(rows) { return rows.reduce((a, r) => a + (Number(r.amount) || 0), 0); }
+  mNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+  monthLabelOf(k) { const p = String(k).split('-'); return (this.mNames[Number(p[1]) - 1] || '') + ' ' + p[0]; }
+  shortMonth(k) { return (this.mNames[Number(String(k).split('-')[1]) - 1] || '').slice(0, 3); }
+  dateLabel(d) {
+    if (!d) return '—';
+    const p = String(d).split('-');
+    return Number(p[2]) + ' ' + this.shortMonth(d) + ' ' + p[0];
+  }
+  id(p) { return p + Math.random().toString(36).slice(2, 8); }
+
+  bind(name) {
+    return {
+      value: this.state.form[name] === undefined ? '' : this.state.form[name],
+      onChange: e => {
+        const v = e.target.value;
+        this.setState(s => ({ form: Object.assign({}, s.form, { [name]: v }), error: '' }));
+      }
+    };
+  }
+
+  open(type, extra) {
+    const today = '2026-08-19';
+    const d = this.state.data;
+    const base = { date: today, method: 'Cash', kind: 'lent' };
+    if (type === 'expense') base.cat = (d.expenseCats[0] || {}).name || '';
+    if (type === 'income') base.cat = (d.incomeCats[0] || {}).name || '';
+    if (type === 'contrib') base.member = this.me;
+    this.setState({ modal: type, form: Object.assign(base, extra || {}), error: '', flash: '' });
+  }
+  close = () => this.setState({ modal: null, error: '' });
+
+  submit(e) {
+    if (e && e.preventDefault) e.preventDefault();
+    const f = this.state.form;
+    const t = this.state.modal;
+    const amount = Number(f.amount);
+    const fail = m => this.setState({ error: m });
+    if (t === 'expense' || t === 'income') {
+      if (!(amount > 0)) return fail('Enter an amount greater than zero.');
+      const row = { id: this.id('x'), date: f.date, cat: f.cat, amount: amount, note: f.note || 'Unspecified' };
+      if (t === 'expense') {
+        row.method = f.method || 'Cash';
+        this.edit(d => { d.expenses.push(row); return d; });
+      } else {
+        this.edit(d => { d.incomes.push(row); return d; });
+      }
+      return this.done(this.fmt(amount) + ' recorded against ' + f.cat + '.', f.date.slice(0, 7));
+    }
+    if (t === 'expcat') {
+      if (!f.name) return fail('Give the category a name.');
+      this.edit(d => { d.expenseCats.push({ id: this.id('c'), name: f.name, limit: Number(f.limit) || 0 }); return d; });
+      return this.done('Category ' + f.name + ' added.');
+    }
+    if (t === 'inccat') {
+      if (!f.name) return fail('Give the source a name.');
+      this.edit(d => { d.incomeCats.push({ id: this.id('i'), name: f.name }); return d; });
+      return this.done('Source ' + f.name + ' added.');
+    }
+    if (t === 'project') {
+      if (!f.name) return fail('Give the project a name.');
+      this.edit(d => {
+        d.projects.unshift({ id: this.id('p'), name: f.name, target: Number(f.target) || 0, note: f.note || '', members: [this.me], contribs: [] });
+        return d;
+      });
+      return this.done('Project ' + f.name + ' opened.');
+    }
+    if (t === 'member') {
+      if (!f.name) return fail('Enter the member name.');
+      this.edit(d => {
+        const p = d.projects.find(x => x.id === f.projectId);
+        if (p && p.members.indexOf(f.name) < 0) p.members.push(f.name);
+        return d;
+      });
+      return this.done(f.name + ' added to the project.');
+    }
+    if (t === 'contrib') {
+      if (!(amount > 0)) return fail('Enter an amount greater than zero.');
+      if (!f.txn) return fail('A transaction ID is required for contributions.');
+      this.edit(d => {
+        const p = d.projects.find(x => x.id === f.projectId);
+        if (p) p.contribs.push({ id: this.id('k'), member: f.member || this.me, amount: amount, txn: f.txn, date: '2026-08-19' });
+        return d;
+      });
+      return this.done('Contribution of ' + this.fmt(amount) + ' recorded, ref ' + f.txn + '.');
+    }
+    if (t === 'debt') {
+      if (!f.person) return fail('Name the counterparty.');
+      if (!(amount > 0)) return fail('Enter an amount greater than zero.');
+      this.edit(d => {
+        d.debts.unshift({ id: this.id('d'), kind: f.kind || 'lent', person: f.person, amount: amount, date: '2026-08-19', due: f.due || '', note: f.note || '', settled: false });
+        return d;
+      });
+      return this.done('Entry recorded against ' + f.person + '.');
+    }
+    return this.close();
+  }
+  done(msg, month) {
+    this.setState(s => ({ modal: null, form: {}, error: '', flash: msg, month: month || s.month }));
+  }
+
+  renderVals() {
+    const s = this.state, d = s.data, mk = s.month;
+    const inMonth = rows => rows.filter(r => String(r.date).startsWith(mk));
+    const mExp = inMonth(d.expenses), mInc = inMonth(d.incomes);
+    const mExpTotal = this.sum(mExp), mIncTotal = this.sum(mInc);
+    const allExp = this.sum(d.expenses), allInc = this.sum(d.incomes);
+
+    const donut = items => {
+      const list = items.filter(i => i.value > 0).sort((a, b) => b.value - a.value);
+      const total = list.reduce((a, b) => a + b.value, 0) || 1;
+      const C = 2 * Math.PI * 52;
+      let acc = 0;
+      return list.map((it, i) => {
+        const frac = it.value / total;
+        const seg = {
+          label: it.label, money: this.fmt(it.value),
+          pctLabel: Math.round(frac * 100) + '%',
+          color: this.colors[i % this.colors.length],
+          dash: Math.max(frac * C - 1.6, 0).toFixed(2) + ' ' + C.toFixed(2),
+          offset: (-acc * C).toFixed(2)
+        };
+        acc += frac;
+        return seg;
+      });
+    };
+    const byCat = (rows, names) => names.map(n => ({ label: n, value: this.sum(rows.filter(r => r.cat === n)) }));
+    const expCatNames = d.expenseCats.map(c => c.name);
+    const incCatNames = d.incomeCats.map(c => c.name);
+    const extraExpNames = mExp.map(r => r.cat).filter(n => expCatNames.indexOf(n) < 0);
+    const extraIncNames = mInc.map(r => r.cat).filter(n => incCatNames.indexOf(n) < 0);
+
+    const budgets = d.expenseCats.map((c, i) => {
+      const spent = this.sum(mExp.filter(r => r.cat === c.name));
+      const pct = c.limit > 0 ? spent / c.limit : 0;
+      const over = c.limit > 0 && spent > c.limit;
+      return {
+        name: c.name, spent: this.fmt(spent), limit: c.limit > 0 ? this.fmt(c.limit) : 'no limit',
+        width: Math.min(pct, 1) * 100 + '%',
+        color: over ? '#7d5411' : (pct > 0.85 ? '#c28d41' : '#b68235'),
+        over: over,
+        status: c.limit <= 0 ? 'No ceiling set' : (over ? this.fmt(spent - c.limit) + ' over the ceiling' : Math.round((1 - pct) * 100) + '% of the ceiling remains')
+      };
+    });
+    const overs = budgets.filter(b => b.over);
+
+    // six-month movement
+    const histKeys = ['2026-07', '2026-08'];
+    const pts = d.history.map(h => ({ label: h.label, inc: h.inc, exp: h.exp }));
+    histKeys.forEach(k => pts.push({
+      label: this.shortMonth(k),
+      inc: this.sum(d.incomes.filter(r => String(r.date).startsWith(k))),
+      exp: this.sum(d.expenses.filter(r => String(r.date).startsWith(k)))
+    }));
+    const peak = Math.max.apply(null, pts.map(p => Math.max(p.inc, p.exp)).concat([1]));
+    const top = Math.max(Math.ceil(peak / 20000) * 20000, 20000);
+    const X0 = 48, X1 = 624, Y0 = 14, Y1 = 164;
+    const xAt = i => (X0 + (X1 - X0) * (pts.length > 1 ? i / (pts.length - 1) : 0)).toFixed(1);
+    const yAt = v => (Y1 - (Y1 - Y0) * (v / top)).toFixed(1);
+    const trend = {
+      points: pts.map((p, i) => ({ label: p.label, x: xAt(i), iy: yAt(p.inc), ey: yAt(p.exp) })),
+      incPoints: pts.map((p, i) => xAt(i) + ',' + yAt(p.inc)).join(' '),
+      expPoints: pts.map((p, i) => xAt(i) + ',' + yAt(p.exp)).join(' '),
+      grid: [0, 0.5, 1].map(f => ({
+        y: yAt(top * f), ty: (Number(yAt(top * f)) + 3.5).toFixed(1),
+        label: f === 0 ? '0' : Math.round(top * f / 1000) + 'k'
+      }))
+    };
+
+    const openDebts = d.debts.filter(x => !x.settled);
+    const lent = this.sum(openDebts.filter(x => x.kind === 'lent'));
+    const borrowed = this.sum(openDebts.filter(x => x.kind === 'borrowed'));
+    const netDebt = lent - borrowed;
+
+    const sortRows = rows => rows.slice().sort((a, b) => (a.date < b.date ? 1 : -1));
+    const monthKeys = Array.from(new Set(d.expenses.map(r => r.date.slice(0, 7)).concat(d.incomes.map(r => r.date.slice(0, 7))).concat([mk]))).sort().reverse();
+
+    const screen = s.screen;
+    const titles = {
+      dashboard: ['Statement of account', 'Dashboard'],
+      expenses: ['Expenditure', 'Expense register'],
+      income: ['Receipts', 'Income register'],
+      projects: ['Shared pots', 'Projects'],
+      debts: ['Standing accounts', 'Debt and lending'],
+      settings: ['Preferences', 'Settings']
+    };
+    const t = titles[screen] || titles.dashboard;
+    const navFor = k => ({ active: screen === k ? 'true' : 'false', onClick: () => this.setState({ screen: k, flash: '' }) });
+
+    const projects = d.projects.map(p => {
+      const raised = this.sum(p.contribs);
+      const mine = this.sum(p.contribs.filter(c => c.member === this.me));
+      return {
+        name: p.name, note: p.note,
+        raised: this.fmt(raised), target: p.target > 0 ? this.fmt(p.target) : 'open',
+        pctLabel: p.target > 0 ? Math.round(raised / p.target * 100) + '% funded' : 'no target',
+        width: (p.target > 0 ? Math.min(raised / p.target, 1) * 100 : 0) + '%',
+        mine: this.fmt(mine),
+        minePctLabel: raised > 0 ? Math.round(mine / raised * 100) + '%' : '—',
+        memberCount: p.members.length,
+        members: p.members.map(m => ({ name: m === this.me ? m + ' (me)' : m, tag: m === this.me ? 'tag-accent' : 'tag-neutral' })),
+        contribs: sortRows(p.contribs).map(c => ({
+          member: c.member === this.me ? c.member + ' (me)' : c.member,
+          dateLabel: this.dateLabel(c.date), txn: c.txn || '—', money: this.fmt(c.amount)
+        })),
+        onContribute: () => this.open('contrib', { projectId: p.id, member: this.me }),
+        onAddMember: () => this.open('member', { projectId: p.id })
+      };
+    });
+
+    const fields = ['email', 'password', 'date', 'cat', 'amount', 'note', 'method', 'name', 'limit', 'target', 'person', 'txn', 'due', 'member'];
+    const b = {};
+    fields.forEach(f => { b[f] = this.bind(f); });
+
+    const modalMeta = {
+      expense: ['New entry', 'Record an expense', 'Record expense'],
+      income: ['New entry', 'Record income', 'Record income'],
+      expcat: ['Budget', 'Add a budget category', 'Add category'],
+      inccat: ['Sources', 'Add an income category', 'Add source'],
+      project: ['Shared pot', 'Create a project', 'Create project'],
+      member: ['Shared pot', 'Add a member', 'Add member'],
+      contrib: ['Shared pot', 'Add a contribution', 'Record contribution'],
+      debt: ['Standing account', 'Record a debt or lending', 'Record entry']
+    };
+    const mm = modalMeta[s.modal] || ['', '', 'Save'];
+    const modalProject = s.modal ? (d.projects.find(x => x.id === s.form.projectId) || null) : null;
+
+    return {
+      density: this.props.density ?? 'Comfortable',
+      currencySymbol: this.sym(),
+      showTrend: this.props.showTrend !== false,
+      isLogin: screen === 'login',
+      isApp: screen !== 'login',
+      isDash: screen === 'dashboard',
+      isExp: screen === 'expenses',
+      isInc: screen === 'income',
+      isProj: screen === 'projects',
+      isDebt: screen === 'debts',
+      isSet: screen === 'settings',
+      userName: d.user.name,
+      userEmail: d.user.email,
+      pageKicker: t[0],
+      pageTitle: t[1],
+      showMonthPicker: screen === 'dashboard' || screen === 'expenses' || screen === 'income',
+      month: mk,
+      monthLabel: this.monthLabelOf(mk),
+      monthShort: this.shortMonth(mk),
+      monthOptions: monthKeys.map(k => ({ key: k, label: this.monthLabelOf(k) })),
+      onMonthChange: e => this.setState({ month: e.target.value }),
+      nav: { dashboard: navFor('dashboard'), expenses: navFor('expenses'), income: navFor('income'), projects: navFor('projects'), debts: navFor('debts'), settings: navFor('settings') },
+      flash: s.flash,
+      clearFlash: () => this.setState({ flash: '' }),
+      error: s.error,
+      noop: e => e.preventDefault(),
+
+      balanceMoney: this.fmt(allInc - allExp),
+      mIncMoney: this.fmt(mIncTotal),
+      mExpMoney: this.fmt(mExpTotal),
+      mNetMoney: (mIncTotal - mExpTotal < 0 ? '−' : '') + this.fmt(Math.abs(mIncTotal - mExpTotal)),
+      incCountNote: mInc.length + (mInc.length === 1 ? ' receipt entered' : ' receipts entered'),
+      expCountNote: mExp.length + (mExp.length === 1 ? ' entry posted' : ' entries posted'),
+      savingsNote: mIncTotal > 0 ? Math.round((mIncTotal - mExpTotal) / mIncTotal * 100) + '% of receipts retained' : 'No receipts this period',
+      hasOverLimit: overs.length > 0,
+      overLimitNote: overs.map(o => o.name + ' — ' + o.status).join('; '),
+      expDonut: donut(byCat(mExp, expCatNames.concat(Array.from(new Set(extraExpNames))))),
+      incDonut: donut(byCat(mInc, incCatNames.concat(Array.from(new Set(extraIncNames))))),
+      budgets: budgets,
+      trend: trend,
+
+      lentMoney: this.fmt(lent),
+      borrowedMoney: this.fmt(borrowed),
+      netDebtMoney: (netDebt < 0 ? '−' : '') + this.fmt(Math.abs(netDebt)),
+      netDebtNote: netDebt >= 0 ? 'In your favour once collected' : 'Against you once discharged',
+      lentNote: openDebts.filter(x => x.kind === 'lent').length + ' open advances',
+      borrowedNote: openDebts.filter(x => x.kind === 'borrowed').length + ' outstanding obligations',
+      openDebts: openDebts.slice(0, 4).map(x => ({
+        kindLabel: x.kind === 'lent' ? 'Lent' : 'Borrowed',
+        tag: x.kind === 'lent' ? 'tag-accent' : 'tag-neutral',
+        person: x.person, dueLabel: x.due ? 'due ' + this.dateLabel(x.due) : 'no date', money: this.fmt(x.amount)
+      })),
+      debtSummary: openDebts.length + ' entries open, ' + d.debts.filter(x => x.settled).length + ' settled',
+      debtRows: d.debts.slice().sort((a, b) => (a.settled === b.settled ? (a.date < b.date ? 1 : -1) : (a.settled ? 1 : -1))).map(x => ({
+        kindLabel: x.kind === 'lent' ? 'Lent' : 'Borrowed',
+        tag: x.kind === 'lent' ? 'tag-accent' : 'tag-neutral',
+        person: x.person, note: x.note || '—',
+        dueLabel: x.due ? this.dateLabel(x.due) : '—',
+        money: this.fmt(x.amount), open: !x.settled, settled: x.settled,
+        onSettle: () => {
+          this.edit(dd => { const r = dd.debts.find(y => y.id === x.id); if (r) r.settled = true; return dd; });
+          this.setState({ flash: 'Settled — ' + x.person + ', ' + this.fmt(x.amount) + '.' });
+        }
+      })),
+
+      expRows: sortRows(mExp).map(r => ({
+        date: this.dateLabel(r.date), cat: r.cat, note: r.note, method: r.method || 'Cash', money: this.fmt(r.amount),
+        onDelete: () => this.edit(dd => { dd.expenses = dd.expenses.filter(x => x.id !== r.id); return dd; })
+      })),
+      incRows: sortRows(mInc).map(r => ({
+        date: this.dateLabel(r.date), cat: r.cat, note: r.note, money: this.fmt(r.amount),
+        onDelete: () => this.edit(dd => { dd.incomes = dd.incomes.filter(x => x.id !== r.id); return dd; })
+      })),
+      expRowsNote: mExp.length + ' entries — ' + this.monthLabelOf(mk),
+      incRowsNote: mInc.length + ' receipts — ' + this.monthLabelOf(mk),
+      expCats: d.expenseCats.map(c => ({ name: c.name })),
+      incCats: d.incomeCats.map(c => ({
+        name: c.name,
+        onRemove: () => this.edit(dd => { dd.incomeCats = dd.incomeCats.filter(x => x.id !== c.id); return dd; })
+      })),
+      limitRows: d.expenseCats.map(c => ({
+        name: c.name, value: c.limit,
+        spentLabel: this.fmt(this.sum(mExp.filter(r => r.cat === c.name))) + ' spent in ' + this.shortMonth(mk),
+        onChange: e => {
+          const v = Number(e.target.value) || 0;
+          this.edit(dd => { const row = dd.expenseCats.find(x => x.id === c.id); if (row) row.limit = v; return dd; });
+        },
+        onRemove: () => this.edit(dd => { dd.expenseCats = dd.expenseCats.filter(x => x.id !== c.id); return dd; })
+      })),
+      projects: projects,
+      projSummary: d.projects.length + ' pots, ' + this.fmt(d.projects.reduce((a, p) => a + this.sum(p.contribs.filter(c => c.member === this.me)), 0)) + ' contributed by me',
+      methods: this.methods,
+
+      b: b,
+      modalOpen: !!s.modal,
+      modalKicker: mm[0],
+      modalTitle: mm[1],
+      modalAction: mm[2],
+      mExpense: s.modal === 'expense',
+      mIncome: s.modal === 'income',
+      mExpCat: s.modal === 'expcat',
+      mIncCat: s.modal === 'inccat',
+      mProject: s.modal === 'project',
+      mMember: s.modal === 'member',
+      mContrib: s.modal === 'contrib',
+      mDebt: s.modal === 'debt',
+      modalMembers: modalProject ? modalProject.members : [this.me],
+      kindLent: (s.form.kind || 'lent') === 'lent',
+      kindBorrowed: s.form.kind === 'borrowed',
+      setLent: () => this.setState(st => ({ form: Object.assign({}, st.form, { kind: 'lent' }) })),
+      setBorrowed: () => this.setState(st => ({ form: Object.assign({}, st.form, { kind: 'borrowed' }) })),
+      openAddExpense: () => this.open('expense'),
+      openAddIncome: () => this.open('income'),
+      openAddExpenseCat: () => this.open('expcat'),
+      openAddIncomeCat: () => this.open('inccat'),
+      openNewProject: () => this.open('project'),
+      openAddDebt: () => this.open('debt'),
+      closeModal: this.close,
+      onBackdrop: this.close,
+      stop: e => e.stopPropagation(),
+      onSubmit: e => this.submit(e),
+      onLogin: e => {
+        e.preventDefault();
+        if (!s.form.email || !s.form.password) return this.setState({ error: 'Both fields are required.' });
+        this.setState({ screen: 'dashboard', error: '', form: {} });
+      },
+      onLogout: () => this.setState({ screen: 'login', modal: null, flash: '', form: { email: d.user.email, password: 'ledger2026' } }),
+      onReset: () => {
+        const fresh = this.seed();
+        this.persist(fresh);
+        this.setState({ data: fresh, flash: 'Demo records restored.', month: '2026-08' });
+      }
+    };
+  }
+}
+</script>
+</body>
+</html>
