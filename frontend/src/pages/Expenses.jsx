@@ -4,6 +4,7 @@ import api from '../api/client'
 const METHODS = ['Cash', 'bKash', 'Card', 'Bank transfer']
 const COLORS = ['#ff6a4d', '#7b5cf0', '#0fb3a3', '#f9a825', '#2f9bff', '#ff5fa2', '#7fc244']
 const mNames = ['January','February','March','April','May','June','July','August','September','October','November','December']
+const fmtDate = s => { if (!s) return ''; const [y,m,d] = s.split('-'); return `${parseInt(d)} ${mNames[parseInt(m)-1]} ${y}` }
 
 function Modal({ title, onClose, children }) {
   return (
@@ -74,7 +75,7 @@ export default function Expenses() {
               <tr><td colSpan={6} style={{ textAlign: 'center', color: '#6f6880', padding: '32px 16px' }}>No expenses this month</td></tr>
             ) : items.map(e => (
               <tr key={e.id}>
-                <td data-label="Date" style={{ color: '#6f6880', fontSize: 14 }}>{e.date}</td>
+                <td data-label="Date" style={{ color: '#6f6880', fontSize: 14 }}>{fmtDate(e.date)}</td>
                 <td data-label="Category">
                   <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8, fontWeight: 600 }}>
                     <span style={{ width: 10, height: 10, borderRadius: 3, background: colorFor(e.category), flexShrink: 0 }} />

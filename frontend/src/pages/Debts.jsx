@@ -1,6 +1,9 @@
 import { useEffect, useState } from 'react'
 import api from '../api/client'
 
+const mNames = ['January','February','March','April','May','June','July','August','September','October','November','December']
+const fmtDate = s => { if (!s) return ''; const [y,m,d] = s.split('-'); return `${parseInt(d)} ${mNames[parseInt(m)-1]} ${y}` }
+
 function Modal({ title, onClose, children }) {
   return (
     <div onClick={onClose} className="modal-overlay">
@@ -89,7 +92,7 @@ export default function Debts() {
                     <td data-label="Total" className="tnum">৳{d.amount.toLocaleString()}</td>
                     <td data-label="Paid" style={{ color: '#0b6b52', fontWeight: 700 }} className="tnum">৳{d.paidAmount.toLocaleString()}</td>
                     <td data-label="Left" style={{ color: '#9c3a22', fontWeight: 700 }} className="tnum">৳{d.remaining.toLocaleString()}</td>
-                    <td data-label="Due" style={{ color: '#6f6880', fontSize: 14 }}>{d.due}</td>
+                    <td data-label="Due" style={{ color: '#6f6880', fontSize: 14 }}>{fmtDate(d.due)}</td>
                     <td data-label="">
                       <span style={{ display: 'flex', gap: 4, justifyContent: 'flex-end' }}>
                         <button onClick={() => setPayDebt(d)} style={{ background: 'none', border: 0, cursor: 'pointer', color: '#7b5cf0', fontSize: 13, fontWeight: 700, padding: '5px 9px', borderRadius: 999 }}

@@ -338,14 +338,14 @@ a:hover { color: var(--coral); }
     flex-direction: column;
     align-items: center;
     gap: 3px;
-    padding: 6px 10px;
+    padding: 6px 6px;
     border-radius: 14px;
     color: #6f6880;
     text-decoration: none;
-    font-size: 10px;
+    font-size: 9px;
     font-weight: 700;
     font-family: 'Bricolage Grotesque', system-ui, sans-serif;
-    min-width: 44px;
+    min-width: 0;
     transition: all 0.15s;
     border: 0;
     background: transparent;
