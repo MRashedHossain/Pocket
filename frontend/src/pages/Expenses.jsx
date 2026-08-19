@@ -100,12 +100,12 @@ export default function Expenses() {
       {modal && (
         <Modal title="Log an expense" onClose={() => setModal(false)}>
           <form onSubmit={submit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-            <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap' }}>
-              <div style={{ flex: '1 1 140px' }}>
+            <div className="form-row">
+              <div>
                 <label className="lbl">Date</label>
                 <input className="inp" type="date" required value={form.date} onChange={e => setForm(f => ({ ...f, date: e.target.value }))} />
               </div>
-              <div style={{ flex: '1 1 160px' }}>
+              <div>
                 <label className="lbl">Category</label>
                 {cats.length > 0
                   ? <select className="inp" value={form.category} onChange={e => setForm(f => ({ ...f, category: e.target.value }))}>{cats.map(c => <option key={c.id}>{c.name}</option>)}</select>
@@ -113,12 +113,12 @@ export default function Expenses() {
                 }
               </div>
             </div>
-            <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap' }}>
-              <div style={{ flex: '1 1 140px' }}>
+            <div className="form-row">
+              <div>
                 <label className="lbl">Amount (৳)</label>
                 <input className="inp tnum" type="number" min="0" step="1" required placeholder="0" value={form.amount} onChange={e => setForm(f => ({ ...f, amount: e.target.value }))} />
               </div>
-              <div style={{ flex: '1 1 160px' }}>
+              <div>
                 <label className="lbl">Method</label>
                 <select className="inp" value={form.method} onChange={e => setForm(f => ({ ...f, method: e.target.value }))}>{METHODS.map(m => <option key={m}>{m}</option>)}</select>
               </div>

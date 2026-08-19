@@ -98,12 +98,12 @@ export default function Income() {
       {modal && (
         <Modal title="Log income" onClose={() => setModal(false)}>
           <form onSubmit={submit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-            <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap' }}>
-              <div style={{ flex: '1 1 140px' }}>
+            <div className="form-row">
+              <div>
                 <label className="lbl">Date</label>
                 <input className="inp" type="date" required value={form.date} onChange={e => setForm(f => ({ ...f, date: e.target.value }))} />
               </div>
-              <div style={{ flex: '1 1 160px' }}>
+              <div>
                 <label className="lbl">Source</label>
                 {cats.length > 0
                   ? <select className="inp" value={form.category} onChange={e => setForm(f => ({ ...f, category: e.target.value }))}>{cats.map(c => <option key={c.id}>{c.name}</option>)}</select>

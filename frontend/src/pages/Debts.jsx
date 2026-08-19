@@ -144,22 +144,22 @@ export default function Debts() {
                 </button>
               ))}
             </div>
-            <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap' }}>
-              <div style={{ flex: '1 1 170px' }}>
+            <div className="form-row">
+              <div>
                 <label className="lbl">Who</label>
                 <input className="inp" type="text" placeholder="Rashed Karim" required value={form.person} onChange={e => setForm(f => ({ ...f, person: e.target.value }))} />
               </div>
-              <div style={{ flex: '1 1 130px' }}>
+              <div>
                 <label className="lbl">Amount (৳)</label>
                 <input className="inp tnum" type="number" min="0" step="100" placeholder="0" required value={form.amount} onChange={e => setForm(f => ({ ...f, amount: e.target.value }))} />
               </div>
             </div>
-            <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap' }}>
-              <div style={{ flex: '1 1 140px' }}>
+            <div className="form-row">
+              <div>
                 <label className="lbl">Pay back by</label>
                 <input className="inp" type="date" value={form.due} onChange={e => setForm(f => ({ ...f, due: e.target.value }))} />
               </div>
-              <div style={{ flex: '1 1 170px' }}>
+              <div>
                 <label className="lbl">What for</label>
                 <input className="inp" type="text" placeholder="Covered his lunch tab" value={form.note} onChange={e => setForm(f => ({ ...f, note: e.target.value }))} />
               </div>
