@@ -58,7 +58,7 @@ export default function Debts() {
 
   return (
     <>
-      <div className="page-topbar" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+      <div className="page-topbar" style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
         <div style={{ flex: 1 }}>
           <h1 style={{ fontSize: 26, fontWeight: 800 }}>Debts & Lending</h1>
           <p style={{ margin: '4px 0 0', color: '#6f6880', fontSize: 14 }}>{open.length} open · {settled.length} settled</p>

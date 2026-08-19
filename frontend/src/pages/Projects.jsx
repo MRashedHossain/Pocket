@@ -39,12 +39,12 @@ export default function Projects() {
 
   return (
     <>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 18 }}>
+      <div className="page-topbar" style={{ display: 'flex', alignItems: 'center', gap: 18 }}>
         <div style={{ flex: 1 }}>
           <h1 style={{ fontSize: 26, fontWeight: 800 }}>Projects</h1>
           <p style={{ margin: '4px 0 0', color: '#6f6880', fontSize: 14 }}>{projects.length} pot{projects.length !== 1 ? 's' : ''}</p>
         </div>
-        <button className="btn-violet" onClick={() => setModal('new')} style={{ minHeight: 40, padding: '8px 20px', fontSize: 14 }}>+ New pot</button>
+        <button className="btn-violet" onClick={() => setModal('new')} style={{ minHeight: 40, padding: '8px 20px', fontSize: 14, flexShrink: 0 }}>+ New pot</button>
       </div>
 
       {projects.length === 0 ? (

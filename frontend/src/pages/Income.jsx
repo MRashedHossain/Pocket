@@ -54,9 +54,11 @@ export default function Income() {
           <h1 style={{ fontSize: 26, fontWeight: 800 }}>Income</h1>
           <p style={{ margin: '4px 0 0', color: '#6f6880', fontSize: 14 }}>{items.length} payment{items.length !== 1 ? 's' : ''} in {ml}</p>
         </div>
-        <input type="month" value={month} onChange={e => setMonth(e.target.value)}
-          className="inp" style={{ width: 'auto', minHeight: 40, padding: '8px 14px', fontSize: 14 }} />
-        <button className="btn-violet" onClick={() => setModal(true)} style={{ minHeight: 40, padding: '8px 20px', fontSize: 14 }}>+ Add income</button>
+        <div className="topbar-controls">
+          <input type="month" value={month} onChange={e => setMonth(e.target.value)}
+            className="inp" style={{ width: 'auto', minHeight: 40, padding: '8px 14px', fontSize: 14 }} />
+          <button className="btn-violet" onClick={() => setModal(true)} style={{ minHeight: 40, padding: '8px 20px', fontSize: 14, flexShrink: 0 }}>+ Add income</button>
+        </div>
       </div>
 
       <div className="card table-wrap" style={{ padding: 0 }}>

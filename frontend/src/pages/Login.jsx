@@ -21,7 +21,7 @@ export default function Login() {
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh', minHeight: '100dvh' }}>
-      <div className="login-art" style={{ flex: '1 1 46%', background: '#7b5cf0', minWidth: 0, color: '#fff', padding: 44, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', minWidth: 0 }}>
+      <div className="login-art" style={{ flex: '1 1 46%', background: '#7b5cf0', minWidth: 0, color: '#fff', padding: 44, flexDirection: 'column', justifyContent: 'space-between' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <span style={{ width: 34, height: 34, borderRadius: 12, background: '#f9a825', display: 'grid', placeItems: 'center', fontFamily: '"Bricolage Grotesque"', fontWeight: 800, color: '#241f2e', fontSize: 18 }}>৳</span>
           <span style={{ fontFamily: '"Bricolage Grotesque"', fontWeight: 800, fontSize: 19, letterSpacing: '-0.01em' }}>Pocket</span>

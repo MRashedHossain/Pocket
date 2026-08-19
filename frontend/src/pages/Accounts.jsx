@@ -39,12 +39,12 @@ export default function Accounts() {
 
   return (
     <>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 18 }}>
+      <div className="page-topbar" style={{ display: 'flex', alignItems: 'center', gap: 18 }}>
         <div style={{ flex: 1 }}>
           <h1 style={{ fontSize: 26, fontWeight: 800 }}>Accounts & Wallets</h1>
           <p style={{ margin: '4px 0 0', color: '#6f6880', fontSize: 14 }}>{accounts.length} accounts · ৳{total.toLocaleString()} total</p>
         </div>
-        <button className="btn-violet" onClick={() => setModal(true)} style={{ minHeight: 40, padding: '8px 20px', fontSize: 14 }}>+ Add account</button>
+        <button className="btn-violet" onClick={() => setModal(true)} style={{ minHeight: 40, padding: '8px 20px', fontSize: 14, flexShrink: 0 }}>+ Add account</button>
       </div>
 
       {accounts.length === 0 ? (

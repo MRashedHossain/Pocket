@@ -47,9 +47,11 @@ export default function Budgets() {
             {ml}{overCount > 0 ? ` · ${overCount} over limit` : ''}
           </p>
         </div>
-        <input type="month" value={month} onChange={e => setMonth(e.target.value)}
-          className="inp" style={{ width: 'auto', minHeight: 40, padding: '8px 14px', fontSize: 14 }} />
-        <button className="btn-violet" onClick={() => setModal(true)} style={{ minHeight: 40, padding: '8px 20px', fontSize: 14 }}>+ Add budget</button>
+        <div className="topbar-controls">
+          <input type="month" value={month} onChange={e => setMonth(e.target.value)}
+            className="inp" style={{ width: 'auto', minHeight: 40, padding: '8px 14px', fontSize: 14 }} />
+          <button className="btn-violet" onClick={() => setModal(true)} style={{ minHeight: 40, padding: '8px 20px', fontSize: 14, flexShrink: 0 }}>+ Add budget</button>
+        </div>
       </div>
 
       {budgets.length === 0 ? (

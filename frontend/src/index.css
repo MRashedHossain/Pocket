@@ -217,6 +217,9 @@ a:hover { color: var(--coral); }
   overflow-y: auto;
 }
 
+/* ── Topbar control group (month picker + action button) ───────── */
+.topbar-controls { display: flex; align-items: center; gap: 8px; }
+
 /* ── Bottom nav (hidden on desktop) ───────────────────────────── */
 .bottom-nav { display: none; }
 
@@ -311,6 +314,15 @@ a:hover { color: var(--coral); }
   .page-topbar {
     flex-wrap: wrap;
     gap: 10px;
+  }
+
+  /* Month picker + action button row — fills full width on wrap */
+  .topbar-controls {
+    width: 100%;
+  }
+  .topbar-controls .inp {
+    flex: 1;
+    min-width: 0;
   }
 
   /* Stat cards: 2 columns on mobile */
