@@ -173,6 +173,29 @@ a:hover { color: var(--coral); }
 /* ── Table wrapper scrollable ──────────────────────────────────── */
 .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
 
+/* ── Dashboard grids ────────────────────────────────────────────── */
+.stat-grid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(4, 1fr);
+}
+.section-grid-2 {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: 1fr 1fr;
+}
+.donut-chart {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+.donut-ring {
+  position: relative;
+  width: 140px;
+  height: 140px;
+  flex: none;
+}
+
 /* ── Login art ─────────────────────────────────────────────────── */
 .login-art { display: flex; }
 
@@ -292,15 +315,28 @@ a:hover { color: var(--coral); }
 
   /* Stat cards: 2 columns on mobile */
   .stat-grid {
-    grid-template-columns: 1fr 1fr !important;
-    gap: 10px !important;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
   }
 
   .stat-grid .figure { font-size: 20px; }
 
   /* Section grids single column */
   .section-grid-2 {
-    grid-template-columns: 1fr !important;
+    grid-template-columns: 1fr;
+  }
+
+  /* Donut chart stacks vertically on mobile */
+  .donut-chart {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  .donut-ring {
+    align-self: center;
+    width: 110px;
+    height: 110px;
   }
 
   /* Buttons smaller on mobile */
