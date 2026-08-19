@@ -7,6 +7,7 @@
   --coral: #ff6a4d; --amber: #f9a825; --teal: #0fb3a3; --violet: #7b5cf0;
   --sky: #2f9bff; --pink: #ff5fa2; --lime: #7fc244;
   --mint: #dcf7ea; --lemon: #fff1cc; --blush: #ffe3dc; --lilac: #eae1ff; --icefl: #ddeeff;
+  --safe-top: env(safe-area-inset-top, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
 }
 
@@ -31,6 +32,7 @@ h1, h2, h3, h4 {
 }
 
 input, select, button, textarea { font: inherit; color: inherit; }
+input[type="date"], input[type="month"] { -webkit-appearance: none; appearance: none; line-height: 1.55; }
 ::placeholder { color: #bab2c6; }
 :focus { outline: none; }
 :focus-visible { outline: 3px solid rgba(123, 92, 240, 0.4); outline-offset: 2px; }
@@ -47,7 +49,7 @@ a:hover { color: var(--coral); }
 
 .side {
   flex: 0 0 246px;
-  padding: 22px 16px;
+  padding: calc(22px + var(--safe-top)) 16px 22px;
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -66,7 +68,7 @@ a:hover { color: var(--coral); }
 }
 
 .page-pad {
-  padding: 26px 34px 44px;
+  padding: calc(26px + var(--safe-top)) 34px 44px;
   display: flex;
   flex-direction: column;
   gap: 22px;
@@ -240,9 +242,9 @@ a:hover { color: var(--coral); }
   /* Main area fills screen */
   .main-area { overflow-y: visible; }
 
-  /* Page padding reduced, bottom space for nav bar */
+  /* Page padding reduced, top for status bar, bottom for nav bar */
   .page-pad {
-    padding: 16px 16px calc(72px + var(--safe-bottom));
+    padding: calc(16px + var(--safe-top)) 16px calc(72px + var(--safe-bottom));
     gap: 16px;
   }
 
