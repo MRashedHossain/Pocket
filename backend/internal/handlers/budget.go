@@ -25,9 +25,6 @@ func enrichBudget(db *gorm.DB, b models.Budget) budgetOut {
 		Where("user_id = ? AND category = ? AND TO_CHAR(date, 'YYYY-MM') = ?", b.UserID, b.Category, b.Month).
 		Scan(&spent)
 	remaining := b.Limit - int(spent)
-	if remaining < 0 {
-		remaining = 0
-	}
 	return budgetOut{
 		ID: b.ID, Category: b.Category, Month: b.Month, Limit: b.Limit,
 		Spent: int(spent), Remaining: remaining, OverLimit: int(spent) > b.Limit,
@@ -87,9 +84,6 @@ func BudgetSummary(db *gorm.DB) gin.HandlerFunc {
 			}
 		}
 		remaining := totalLimit - totalSpent
-		if remaining < 0 {
-			remaining = 0
-		}
 		c.JSON(http.StatusOK, gin.H{
 			"month": month, "totalLimit": totalLimit, "totalSpent": totalSpent,
 			"totalRemaining": remaining, "overLimitCount": overLimitCount, "budgetCount": len(budgets),
@@ -114,9 +108,6 @@ func BudgetUsage(db *gorm.DB) gin.HandlerFunc {
 			expOut[i] = gin.H{"id": e.ID, "date": fmtDate(e.Date), "amount": e.Amount, "note": e.Note}
 		}
 		remaining := b.Limit - spent
-		if remaining < 0 {
-			remaining = 0
-		}
 		c.JSON(http.StatusOK, gin.H{
 			"budget":    enrichBudget(db, b),
 			"spent":     spent,

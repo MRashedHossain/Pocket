@@ -20,33 +20,60 @@ export default function Register() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="w-full max-w-sm bg-white rounded-xl shadow p-8">
-        <h1 className="text-2xl font-bold text-indigo-600 mb-6">Create account</h1>
-        {error && <p className="mb-4 text-sm text-red-600">{error}</p>}
-        <form onSubmit={submit} className="space-y-4">
-          <input
-            type="text" placeholder="Full name" required
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
-            value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
-          />
-          <input
-            type="email" placeholder="Email" required
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
-            value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
-          />
-          <input
-            type="password" placeholder="Password (min 6 chars)" required
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
-            value={form.password} onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
-          />
-          <button type="submit" className="w-full bg-indigo-600 text-white rounded-lg py-2 text-sm font-medium hover:bg-indigo-700">
-            Register
-          </button>
+    <div style={{ display: 'flex', minHeight: '100vh' }}>
+      <div className="login-art" style={{ flex: '1 1 46%', background: '#7b5cf0', minWidth: 0, color: '#fff', padding: 44, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', minWidth: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <span style={{ width: 34, height: 34, borderRadius: 12, background: '#f9a825', display: 'grid', placeItems: 'center', fontFamily: '"Bricolage Grotesque"', fontWeight: 800, color: '#241f2e', fontSize: 18 }}>৳</span>
+          <span style={{ fontFamily: '"Bricolage Grotesque"', fontWeight: 800, fontSize: 19, letterSpacing: '-0.01em' }}>Pocket</span>
+        </div>
+        <div>
+          <h1 style={{ fontSize: 'clamp(38px,4.4vw,58px)', fontWeight: 800, maxWidth: '13em', fontFamily: '"Bricolage Grotesque"', letterSpacing: '-0.02em', lineHeight: 1.08 }}>Your money, your rules.</h1>
+          <p style={{ maxWidth: '30em', fontSize: 17, lineHeight: 1.55, color: 'rgba(255,255,255,0.86)', margin: '18px 0 26px' }}>
+            Start tracking in seconds. No spreadsheets, no clutter — just a clear picture of your finances.
+          </p>
+          <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+            <span style={{ background: '#dcf7ea', color: '#0b6b52', borderRadius: 999, padding: '7px 15px', fontWeight: 700, fontSize: 13.5 }}>Free forever</span>
+            <span style={{ background: '#fff1cc', color: '#7a5300', borderRadius: 999, padding: '7px 15px', fontWeight: 700, fontSize: 13.5 }}>No ads</span>
+            <span style={{ background: '#ffe3dc', color: '#9c2f1a', borderRadius: 999, padding: '7px 15px', fontWeight: 700, fontSize: 13.5 }}>Private</span>
+          </div>
+        </div>
+        <div style={{ fontSize: 13.5, color: 'rgba(255,255,255,0.7)' }}>Track every taka · stay in control</div>
+      </div>
+
+      <div style={{ flex: '1 1 54%', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '40px 20px', minWidth: 0 }}>
+        <form onSubmit={submit} style={{ width: 'min(408px,100%)', background: '#fff', border: '1px solid #f0e5d7', borderRadius: 26, padding: 30, boxShadow: '0 14px 40px rgba(36,31,46,0.07)', display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <div>
+            <h2 style={{ fontSize: 32, fontWeight: 800, fontFamily: '"Bricolage Grotesque"', letterSpacing: '-0.02em' }}>Create account</h2>
+            <p style={{ margin: '8px 0 0', color: '#6f6880', fontSize: 15 }}>Takes about 20 seconds.</p>
+          </div>
+
+          <div>
+            <label className="lbl" htmlFor="name">Full name</label>
+            <input className="inp" id="name" type="text" required placeholder="Nayeem Hasan"
+              value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} />
+          </div>
+          <div>
+            <label className="lbl" htmlFor="email">Email</label>
+            <input className="inp" id="email" type="email" autoComplete="username" required
+              value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} />
+          </div>
+          <div>
+            <label className="lbl" htmlFor="password">Password</label>
+            <input className="inp" id="password" type="password" autoComplete="new-password" required placeholder="Min 6 characters"
+              value={form.password} onChange={e => setForm(f => ({ ...f, password: e.target.value }))} />
+          </div>
+
+          {error && (
+            <div style={{ background: '#ffe3dc', color: '#9c2f1a', borderRadius: 14, padding: '10px 14px', fontSize: 13.5, fontWeight: 700 }}>{error}</div>
+          )}
+
+          <button type="submit" className="btn-coral" style={{ width: '100%' }}>Create my account</button>
+
+          <p style={{ textAlign: 'center', fontSize: 13, color: '#6f6880', margin: 0 }}>
+            Have an account?{' '}
+            <Link to="/login" style={{ color: '#7b5cf0', fontWeight: 700, textDecoration: 'none' }}>Sign in</Link>
+          </p>
         </form>
-        <p className="mt-4 text-center text-sm text-gray-500">
-          Have an account? <Link to="/login" className="text-indigo-600 hover:underline">Sign in</Link>
-        </p>
       </div>
     </div>
   )
