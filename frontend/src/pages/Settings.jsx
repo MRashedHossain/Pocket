@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import api from '../api/client'
+import { useAuth } from '../contexts/AuthContext'
 
 function CategoryManager({ title, cats, onAdd, onDelete }) {
   const [name, setName] = useState('')
@@ -37,6 +38,7 @@ function CategoryManager({ title, cats, onAdd, onDelete }) {
 }
 
 export default function Settings() {
+  const { user, logout } = useAuth()
   const [settings, setSettings] = useState(null)
   const [saved, setSaved] = useState(false)
   const [cats, setCats] = useState({ expense: [], income: [], debt: [] })
@@ -109,6 +111,18 @@ export default function Settings() {
           onAdd={name => addCat('income', name)} onDelete={id => delCat('income', id)} />
         <CategoryManager title="Debt categories" cats={cats.debt}
           onAdd={name => addCat('debt', name)} onDelete={id => delCat('debt', id)} />
+      </div>
+
+      <div style={{ maxWidth: 480, borderTop: '1px solid #f0e5d7', paddingTop: 20, marginTop: 8 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+          <div>
+            <div style={{ fontWeight: 700, fontSize: 15 }}>{user?.name}</div>
+            <div style={{ fontSize: 13, color: '#6f6880', marginTop: 2 }}>{user?.email}</div>
+          </div>
+          <button onClick={logout} className="btn-ghost" style={{ flexShrink: 0, minHeight: 38, padding: '7px 16px', fontSize: 14, color: '#ff6a4d', borderColor: '#ffcfbf' }}>
+            Sign out
+          </button>
+        </div>
       </div>
     </>
   )

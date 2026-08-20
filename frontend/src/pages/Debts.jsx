@@ -56,7 +56,7 @@ export default function Debts() {
   }
 
   const del = async id => {
-    if (!confirm('Delete this debt?')) return
+    if (!confirm('Delete this IOU?')) return
     await api.delete(`/debts/${id}`); load()
   }
 
@@ -67,10 +67,10 @@ export default function Debts() {
     <>
       <div className="page-topbar" style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
         <div style={{ flex: 1 }}>
-          <h1 style={{ fontSize: 26, fontWeight: 800 }}>Debts & Lending</h1>
+          <h1 style={{ fontSize: 26, fontWeight: 800 }}>IOUs</h1>
           <p style={{ margin: '4px 0 0', color: '#6f6880', fontSize: 14 }}>{open.length} open · {settled.length} settled</p>
         </div>
-        <button className="btn-violet" onClick={() => setModal('add')} style={{ minHeight: 40, padding: '8px 20px', fontSize: 14 }}>+ Add debt</button>
+        <button className="btn-violet" onClick={() => setModal('add')} style={{ minHeight: 40, padding: '8px 20px', fontSize: 14 }}>+ Add IOU</button>
       </div>
 
       {open.length > 0 && (
@@ -138,11 +138,11 @@ export default function Debts() {
       )}
 
       {open.length === 0 && settled.length === 0 && (
-        <p style={{ color: '#6f6880' }}>No debts recorded yet.</p>
+        <p style={{ color: '#6f6880' }}>No IOUs recorded yet.</p>
       )}
 
       {modal === 'add' && (
-        <Modal title="Add debt" onClose={() => setModal(null)}>
+        <Modal title="Add IOU" onClose={() => setModal(null)}>
           <form onSubmit={submit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             <div style={{ display: 'flex', gap: 8 }}>
               {['lent', 'borrowed'].map(k => (

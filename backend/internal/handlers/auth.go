@@ -102,6 +102,22 @@ func GetMe() gin.HandlerFunc {
 	}
 }
 
+func LookupUser(db *gorm.DB) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		email := c.Query("email")
+		if email == "" {
+			validationErr(c, "email is required")
+			return
+		}
+		var user models.User
+		if db.Where("email = ?", email).First(&user).Error != nil {
+			notFound(c, "User")
+			return
+		}
+		c.JSON(http.StatusOK, gin.H{"name": user.Name, "email": user.Email})
+	}
+}
+
 func UpdateMe(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var body struct {

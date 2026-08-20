@@ -42,6 +42,10 @@ func main() {
 	authProt.GET("/me", handlers.GetMe())
 	authProt.PATCH("/me", handlers.UpdateMe(database))
 
+	users := v1.Group("/users")
+	users.Use(auth)
+	users.GET("/lookup", handlers.LookupUser(database))
+
 	// ── Dashboard ─────────────────────────────────────────────────────────────
 	dash := v1.Group("/dashboard")
 	dash.Use(auth)

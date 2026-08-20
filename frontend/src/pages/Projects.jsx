@@ -22,6 +22,10 @@ export default function Projects() {
   const [projects, setProjects] = useState([])
   const [modal, setModal] = useState(null)
   const [form, setForm] = useState({ name: '', target: '', note: '' })
+  const [addMemberProject, setAddMemberProject] = useState(null)
+  const [memberEmail, setMemberEmail] = useState('')
+  const [memberError, setMemberError] = useState('')
+  const [memberLoading, setMemberLoading] = useState(false)
 
   const load = () => api.get('/projects').then(r => setProjects(r.data)).catch(() => {})
   useEffect(() => { load() }, [])
@@ -35,6 +39,42 @@ export default function Projects() {
   const del = async id => {
     if (!confirm('Delete project?')) return
     await api.delete(`/projects/${id}`); load()
+  }
+
+  const openAddMember = (project) => {
+    setAddMemberProject(project)
+    setMemberEmail('')
+    setMemberError('')
+  }
+
+  const submitAddMember = async e => {
+    e.preventDefault()
+    setMemberError('')
+    setMemberLoading(true)
+    try {
+      const lookup = await api.get(`/users/lookup?email=${encodeURIComponent(memberEmail)}`)
+      const name = lookup.data.name
+      await api.post(`/projects/${addMemberProject.id}/members`, { name })
+      setAddMemberProject(null)
+      load()
+    } catch (err) {
+      setMemberError(err.response?.data?.error?.message || 'User not found')
+    } finally {
+      setMemberLoading(false)
+    }
+  }
+
+  const removeMember = async (projectId, member) => {
+    const project = projects.find(p => p.id === projectId)
+    const members = await api.get(`/projects/${projectId}/members`)
+    const m = members.data.find(m => m.name === member)
+    if (!m) return
+    try {
+      await api.delete(`/projects/${projectId}/members/${m.id}`)
+      load()
+    } catch (err) {
+      alert(err.response?.data?.error?.message || 'Cannot remove member')
+    }
   }
 
   return (
@@ -77,10 +117,16 @@ export default function Projects() {
                     </div>
                   </>
                 )}
-                <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-                  {(p.members || []).map((m, i) => (
-                    <span key={m} style={{ background: '#f0e5d7', color: '#241f2e', borderRadius: 999, padding: '4px 10px', fontSize: 12.5, fontWeight: 700 }}>{initials(m)}</span>
+                <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
+                  {(p.members || []).map((m) => (
+                    <span key={m} style={{ background: '#f0e5d7', color: '#241f2e', borderRadius: 999, padding: '4px 10px', fontSize: 12.5, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 4 }}>
+                      {initials(m)}
+                      <button onClick={() => removeMember(p.id, m)} title="Remove" style={{ background: 'none', border: 0, cursor: 'pointer', color: '#b0a8bd', fontSize: 11, padding: 0, lineHeight: 1, display: 'flex', alignItems: 'center' }}
+                        onMouseEnter={e => e.currentTarget.style.color = '#ff6a4d'}
+                        onMouseLeave={e => e.currentTarget.style.color = '#b0a8bd'}>×</button>
+                    </span>
                   ))}
+                  <button onClick={() => openAddMember(p)} title="Add member" style={{ background: '#eae1ff', color: '#7b5cf0', border: 0, borderRadius: 999, padding: '4px 10px', fontSize: 12.5, fontWeight: 700, cursor: 'pointer' }}>+ Add</button>
                 </div>
               </div>
             )
@@ -106,6 +152,26 @@ export default function Projects() {
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10 }}>
               <button type="button" className="btn-ghost" onClick={() => setModal(null)}>Never mind</button>
               <button type="submit" className="btn-violet">Create pot</button>
+            </div>
+          </form>
+        </Modal>
+      )}
+
+      {addMemberProject && (
+        <Modal title={`Add member to ${addMemberProject.name}`} onClose={() => setAddMemberProject(null)}>
+          <form onSubmit={submitAddMember} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            <div>
+              <label className="lbl">Email address</label>
+              <input className="inp" type="email" placeholder="friend@example.com" required autoFocus
+                value={memberEmail} onChange={e => { setMemberEmail(e.target.value); setMemberError('') }} />
+              <p style={{ margin: '6px 0 0', fontSize: 12.5, color: '#6f6880' }}>They must have a Pocket account.</p>
+            </div>
+            {memberError && (
+              <div style={{ background: '#ffe3dc', color: '#9c2f1a', borderRadius: 14, padding: '10px 14px', fontSize: 13.5, fontWeight: 700 }}>{memberError}</div>
+            )}
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10 }}>
+              <button type="button" className="btn-ghost" onClick={() => setAddMemberProject(null)}>Cancel</button>
+              <button type="submit" className="btn-violet" disabled={memberLoading}>{memberLoading ? 'Adding…' : 'Add member'}</button>
             </div>
           </form>
         </Modal>

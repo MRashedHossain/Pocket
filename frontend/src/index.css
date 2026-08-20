@@ -200,6 +200,7 @@ a:hover { color: var(--coral); }
 
 /* ── Login art ─────────────────────────────────────────────────── */
 .login-art { display: flex; }
+.login-mobile-header { display: none; }
 
 /* ── Modals ────────────────────────────────────────────────────── */
 .modal-overlay {
@@ -248,8 +249,16 @@ a:hover { color: var(--coral); }
     gap: 16px;
   }
 
-  /* Login: hide art panel, center form */
+  /* Login: hide art panel, show mobile header */
   .login-art { display: none; }
+  .login-mobile-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: calc(16px + var(--safe-top)) 20px 12px;
+    background: #7b5cf0;
+    color: #fff;
+  }
 
   /* Figures smaller on mobile */
   .figure { font-size: 24px; }
