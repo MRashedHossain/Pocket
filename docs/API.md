@@ -85,6 +85,11 @@ Full dashboard payload for a window. Pass `date=YYYY-MM-DD` for a single day, or
 are given. All figures (`monthIncome`, `monthExpense`, `expenseByCategory`, …)
 are scoped to the selected window; `label`/`isDay` describe it. `budgets` always
 track the month containing the window.
+
+`balance` ("in your pocket", all-time) = total income − total expense − money
+lent out and not yet repaid + money borrowed and not yet repaid. `debts.lent`
+and `debts.borrowed` are likewise **outstanding** amounts (net of payments), so
+`balance` and the debts snapshot reconcile.
 ```json
 {
   "month": "2026-08",

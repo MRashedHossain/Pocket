@@ -143,6 +143,8 @@ a:hover { color: var(--coral); }
   background: #fffaf3;
 }
 .pocket-table td { padding: 13px 16px; border-top: 1px solid var(--line); }
+/* numeric columns: values right-aligned to match their right-aligned headers */
+.pocket-table td.tnum { text-align: right; }
 .pocket-table tbody tr:hover { background: #fffaf2; }
 
 .btn-coral {

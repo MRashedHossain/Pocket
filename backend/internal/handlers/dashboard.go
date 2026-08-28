@@ -27,11 +27,32 @@ func windowExpense(db *gorm.DB, uid string, w dateWindow) int {
 	return sumAmount(db, &models.Expense{}, uid, w)
 }
 
+// outstandingByKind is what's still owed on a user's debts of one kind
+// (lent | borrowed) after partial payments: SUM(amount) - SUM(payments), floored
+// at zero. Settled debts net to zero here so they don't matter.
+func outstandingByKind(db *gorm.DB, userID, kind string) int {
+	var amount, paid int64
+	db.Model(&models.Debt{}).
+		Where("user_id = ? AND kind = ?", userID, kind).
+		Select("COALESCE(SUM(amount), 0)").Scan(&amount)
+	db.Model(&models.Payment{}).
+		Joins("JOIN debts ON debts.id = payments.debt_id").
+		Where("debts.user_id = ? AND debts.kind = ?", userID, kind).
+		Select("COALESCE(SUM(payments.amount), 0)").Scan(&paid)
+	if out := int(amount - paid); out > 0 {
+		return out
+	}
+	return 0
+}
+
+// totalBalance is "what's actually in your pocket" all-time: money earned, minus
+// money spent, minus what you've lent out and not been paid back, plus what
+// you've borrowed and not repaid (that cash is in hand).
 func totalBalance(db *gorm.DB, userID string) int {
 	var inc, exp int64
 	db.Model(&models.Income{}).Select("COALESCE(SUM(amount), 0)").Where("user_id = ?", userID).Scan(&inc)
 	db.Model(&models.Expense{}).Select("COALESCE(SUM(amount), 0)").Where("user_id = ?", userID).Scan(&exp)
-	return int(inc - exp)
+	return int(inc-exp) - outstandingByKind(db, userID, "lent") + outstandingByKind(db, userID, "borrowed")
 }
 
 func DashboardSummary(db *gorm.DB) gin.HandlerFunc {
@@ -147,22 +168,13 @@ func Dashboard(db *gorm.DB) gin.HandlerFunc {
 			budgetStats[i] = gin.H{"category": b.Category, "spent": spent, "limit": b.Limit, "overLimit": int(spent) > b.Limit}
 		}
 
-		// Debt stats
-		var debts []models.Debt
-		db.Where("user_id = ?", uid).Find(&debts)
-		var totalLent, totalBorrowed, openCount, settledCount int
-		for _, d := range debts {
-			if !d.Settled {
-				if d.Kind == "lent" {
-					totalLent += d.Amount
-				} else {
-					totalBorrowed += d.Amount
-				}
-				openCount++
-			} else {
-				settledCount++
-			}
-		}
+		// Debt stats — amounts are what's still outstanding (net of payments),
+		// matching how the pocket balance above is adjusted.
+		var openCount, settledCount int64
+		db.Model(&models.Debt{}).Where("user_id = ? AND settled = ?", uid, false).Count(&openCount)
+		db.Model(&models.Debt{}).Where("user_id = ? AND settled = ?", uid, true).Count(&settledCount)
+		totalLent := outstandingByKind(db, uid, "lent")
+		totalBorrowed := outstandingByKind(db, uid, "borrowed")
 
 		payload := gin.H{
 			"month": budgetMonth, "date": dayParam(w), "label": w.Label, "isDay": w.IsDay,

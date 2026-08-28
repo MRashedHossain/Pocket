@@ -60,6 +60,8 @@ func ensureIndexes(db *gorm.DB) {
 		`CREATE INDEX IF NOT EXISTS idx_incomes_user_date ON incomes (user_id, date)`,
 		`CREATE INDEX IF NOT EXISTS idx_budgets_user_month ON budgets (user_id, month)`,
 		`CREATE INDEX IF NOT EXISTS idx_debts_user ON debts (user_id)`,
+		`CREATE INDEX IF NOT EXISTS idx_debts_user_kind ON debts (user_id, kind)`,
+		`CREATE INDEX IF NOT EXISTS idx_payments_debt ON payments (debt_id)`,
 		`CREATE INDEX IF NOT EXISTS idx_expense_categories_user ON expense_categories (user_id)`,
 		`CREATE INDEX IF NOT EXISTS idx_income_categories_user ON income_categories (user_id)`,
 		`CREATE INDEX IF NOT EXISTS idx_debt_categories_user ON debt_categories (user_id)`,

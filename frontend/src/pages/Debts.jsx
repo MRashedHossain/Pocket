@@ -92,7 +92,7 @@ export default function Debts() {
                     <td data-label="Note" style={{ color: '#6f6880', fontSize: 14 }}>{d.note || null}</td>
                     <td data-label="Total" className="tnum">৳{d.amount.toLocaleString()}</td>
                     <td data-label="Paid" style={{ color: '#0b6b52', fontWeight: 700 }} className="tnum">৳{d.paidAmount.toLocaleString()}</td>
-                    <td data-label="Left" style={{ color: '#9c3a22', fontWeight: 700 }} className="tnum">৳{d.remaining.toLocaleString()}</td>
+                    <td data-label="Remaining" style={{ color: '#9c3a22', fontWeight: 700 }} className="tnum">৳{d.remaining.toLocaleString()}</td>
                     <td data-label="Due" style={{ color: '#6f6880', fontSize: 14 }}>{fmtDate(d.due)}</td>
                     <td data-label="">
                       <span style={{ display: 'flex', gap: 4, justifyContent: 'flex-end' }}>
