@@ -74,8 +74,8 @@ export default function Sidebar() {
       </nav>
 
       <div style={{ padding: '12px 14px', borderTop: '1px solid #f0e5d7', marginTop: 8 }}>
-        <p style={{ fontSize: 12, color: '#6f6880', fontWeight: 700, margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user?.email}</p>
-        <button onClick={logout} style={{ marginTop: 4, background: 'none', border: 0, padding: 0, fontSize: 12, color: '#ff6a4d', cursor: 'pointer', fontWeight: 700 }}>
+        <p style={{ fontSize: 12, color: '#6f6880', fontWeight: 700, margin: '0 0 8px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user?.email}</p>
+        <button onClick={logout} className="btn-signout" style={{ width: '100%', fontSize: 13 }}>
           Sign out
         </button>
       </div>

@@ -119,7 +119,7 @@ export default function Settings() {
             <div style={{ fontWeight: 700, fontSize: 15 }}>{user?.name}</div>
             <div style={{ fontSize: 13, color: '#6f6880', marginTop: 2 }}>{user?.email}</div>
           </div>
-          <button onClick={logout} className="btn-ghost" style={{ flexShrink: 0, minHeight: 38, padding: '7px 16px', fontSize: 14, color: '#ff6a4d', borderColor: '#ffcfbf' }}>
+          <button onClick={logout} className="btn-signout" style={{ flexShrink: 0 }}>
             Sign out
           </button>
         </div>
