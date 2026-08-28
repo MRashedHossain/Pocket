@@ -2,22 +2,25 @@ import { useRef } from 'react'
 
 // A real <input type="date"> (so iOS/Android show their native date picker and
 // the browser handles `required` validation) laid transparently over a display
-// layer that always reads DD-MM-YYYY. The native input's own text renders in the
+// layer that reads "23 August 2026". The native input's own text renders in the
 // OS locale — usually MM/DD/YYYY — so we hide it and show our own formatting.
 //
 // On desktop, clicking the body of a date input doesn't open the calendar (only
 // the little indicator does), so we call showPicker() on click.
 
+const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+
+// "2026-08-23" -> "23 August 2026" (a bare DD-MM-YYYY reads ambiguously).
 export function isoToDisplay(iso) {
   if (!iso) return ''
   const [y, m, d] = iso.split('-')
   if (!y || !m || !d) return ''
-  return `${d}-${m}-${y}`
+  return `${Number(d)} ${MONTHS[Number(m) - 1] || m} ${y}`
 }
 
 export default function DateField({
   value, onChange, required, id,
-  className = '', style, placeholder = 'DD-MM-YYYY',
+  className = '', style, placeholder = 'Select date',
 }) {
   const ref = useRef(null)
   const display = isoToDisplay(value)
