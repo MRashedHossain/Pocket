@@ -228,6 +228,46 @@ a:hover { color: var(--coral); }
 /* ── Topbar control group (month picker + action button) ───────── */
 .topbar-controls { display: flex; align-items: center; gap: 8px; }
 
+/* ── Period picker (Month / Day toggle + date field) ──────────── */
+.period-picker {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+.period-seg {
+  display: inline-flex;
+  background: var(--line);
+  border-radius: 999px;
+  padding: 3px;
+  flex-shrink: 0;
+}
+.period-seg button {
+  border: 0;
+  cursor: pointer;
+  border-radius: 999px;
+  padding: 8px 16px;
+  min-height: 38px;
+  font-family: 'Bricolage Grotesque', system-ui, sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: capitalize;
+  background: transparent;
+  color: var(--mut);
+}
+.period-seg button.on {
+  background: #fff;
+  color: var(--ink);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+}
+.period-input {
+  flex: 1 1 150px;
+  min-width: 0;
+  min-height: 42px;
+  width: auto;
+}
+
 /* ── Bottom nav (hidden on desktop) ───────────────────────────── */
 .bottom-nav { display: none; }
 
@@ -384,11 +424,23 @@ a:hover { color: var(--coral); }
   /* Month picker + action button row — fills full width on wrap */
   .topbar-controls {
     width: 100%;
+    flex-wrap: wrap;
   }
   .topbar-controls .inp {
     flex: 1;
     min-width: 0;
   }
+
+  /* Period picker: full width, big tap targets. In a topbar it sits on its
+     own row above a full-width action button. */
+  .period-picker { width: 100%; }
+  .topbar-controls .period-picker { order: -1; }
+  .topbar-controls > .btn-violet,
+  .topbar-controls > .btn-ghost { width: 100%; flex: 1 0 100%; }
+
+  .period-picker .period-seg { flex: 1 1 100%; }
+  .period-picker .period-seg button { flex: 1; min-height: 46px; font-size: 14px; }
+  .period-picker .period-input { flex: 1 1 100%; min-height: 46px; font-size: 16px; }
 
   /* Stat cards: 2 columns on mobile */
   .stat-grid {
