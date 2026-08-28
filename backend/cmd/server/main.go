@@ -21,6 +21,8 @@ func main() {
 		log.Fatalf("failed to connect to database: %v", err)
 	}
 
+	handlers.BcryptCost = cfg.BcryptCost
+
 	r := gin.Default()
 	r.Use(cors())
 
@@ -29,6 +31,7 @@ func main() {
 	})
 
 	v1 := r.Group("/api/v1")
+	v1.Use(middleware.CacheBust())
 	auth := middleware.Auth(cfg.SecretKey, database)
 
 	// ── Auth ──────────────────────────────────────────────────────────────────

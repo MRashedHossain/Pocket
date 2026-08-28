@@ -5,26 +5,27 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/MRashedHossain/pocket/internal/cache"
 	"github.com/MRashedHossain/pocket/internal/models"
 	"gorm.io/gorm"
 )
 
-func currentMonth() string {
-	return time.Now().Format("2006-01")
-}
-
-func monthIncome(db *gorm.DB, userID, month string) int {
+// sumAmount totals the `amount` column of tbl for a user within a half-open
+// [Start, End) date window. Range predicates (not TO_CHAR) so the
+// (user_id, date) index is used.
+func sumAmount(db *gorm.DB, tbl any, uid string, w dateWindow) int {
 	var total int64
-	db.Model(&models.Income{}).Select("COALESCE(SUM(amount), 0)").
-		Where("user_id = ? AND TO_CHAR(date, 'YYYY-MM') = ?", userID, month).Scan(&total)
+	db.Model(tbl).Select("COALESCE(SUM(amount), 0)").
+		Where("user_id = ? AND date >= ? AND date < ?", uid, w.Start, w.End).Scan(&total)
 	return int(total)
 }
 
-func monthExpense(db *gorm.DB, userID, month string) int {
-	var total int64
-	db.Model(&models.Expense{}).Select("COALESCE(SUM(amount), 0)").
-		Where("user_id = ? AND TO_CHAR(date, 'YYYY-MM') = ?", userID, month).Scan(&total)
-	return int(total)
+func windowIncome(db *gorm.DB, uid string, w dateWindow) int {
+	return sumAmount(db, &models.Income{}, uid, w)
+}
+
+func windowExpense(db *gorm.DB, uid string, w dateWindow) int {
+	return sumAmount(db, &models.Expense{}, uid, w)
 }
 
 func totalBalance(db *gorm.DB, userID string) int {
@@ -36,12 +37,17 @@ func totalBalance(db *gorm.DB, userID string) int {
 
 func DashboardSummary(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		month := c.DefaultQuery("month", currentMonth())
+		w, ok := resolveWindow(c)
+		if !ok {
+			validationErr(c, "Invalid date or month, use YYYY-MM-DD or YYYY-MM")
+			return
+		}
 		uid := currentUser(c).ID
-		inc := monthIncome(db, uid, month)
-		exp := monthExpense(db, uid, month)
+		inc := windowIncome(db, uid, w)
+		exp := windowExpense(db, uid, w)
 		c.JSON(http.StatusOK, gin.H{
-			"month": month, "balance": totalBalance(db, uid),
+			"month": w.Start.Format("2006-01"), "date": dayParam(w), "label": w.Label, "isDay": w.IsDay,
+			"balance":     totalBalance(db, uid),
 			"monthIncome": inc, "monthExpense": exp, "monthNet": inc - exp,
 		})
 	}
@@ -55,45 +61,67 @@ func DashboardTrend(db *gorm.DB) gin.HandlerFunc {
 		points := make([]gin.H, months)
 		for i := months - 1; i >= 0; i-- {
 			d := today.AddDate(0, -i, 0)
-			m := d.Format("2006-01")
+			w, _ := monthWindow(d.Format("2006-01"))
 			points[months-1-i] = gin.H{
-				"month":   m,
-				"income":  monthIncome(db, uid, m),
-				"expense": monthExpense(db, uid, m),
+				"month":   d.Format("2006-01"),
+				"income":  windowIncome(db, uid, w),
+				"expense": windowExpense(db, uid, w),
 			}
 		}
 		c.JSON(http.StatusOK, gin.H{"points": points})
 	}
 }
 
+// dayParam is the "YYYY-MM-DD" string for a day window, or "" for a month.
+func dayParam(w dateWindow) string {
+	if w.IsDay {
+		return w.Start.Format("2006-01-02")
+	}
+	return ""
+}
+
 func Dashboard(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		month := c.DefaultQuery("month", currentMonth())
+		w, ok := resolveWindow(c)
+		if !ok {
+			validationErr(c, "Invalid date or month, use YYYY-MM-DD or YYYY-MM")
+			return
+		}
 		uid := currentUser(c).ID
 
-		inc := monthIncome(db, uid, month)
-		exp := monthExpense(db, uid, month)
+		cacheKey := uid + ":dash:" + w.Key
+		if cached, hit := cache.Get(cacheKey); hit {
+			c.JSON(http.StatusOK, cached)
+			return
+		}
+
+		inc := windowIncome(db, uid, w)
+		exp := windowExpense(db, uid, w)
 
 		var incomeCount, expenseCount int64
-		db.Model(&models.Income{}).Where("user_id = ? AND TO_CHAR(date, 'YYYY-MM') = ?", uid, month).Count(&incomeCount)
-		db.Model(&models.Expense{}).Where("user_id = ? AND TO_CHAR(date, 'YYYY-MM') = ?", uid, month).Count(&expenseCount)
+		db.Model(&models.Income{}).Where("user_id = ? AND date >= ? AND date < ?", uid, w.Start, w.End).Count(&incomeCount)
+		db.Model(&models.Expense{}).Where("user_id = ? AND date >= ? AND date < ?", uid, w.Start, w.End).Count(&expenseCount)
 
 		savingsRate := 0
 		if inc > 0 {
 			savingsRate = (inc - exp) * 100 / inc
 		}
 
-		// Expense by category
 		type catRow struct {
 			Category string
 			Total    int64
 		}
+
+		// Expense by category — also reused below for budget "spent" so we don't
+		// fire one SUM per budget row.
 		var expCats []catRow
 		db.Model(&models.Expense{}).Select("category, SUM(amount) as total").
-			Where("user_id = ? AND TO_CHAR(date, 'YYYY-MM') = ?", uid, month).
+			Where("user_id = ? AND date >= ? AND date < ?", uid, w.Start, w.End).
 			Group("category").Scan(&expCats)
+		spentByCat := make(map[string]int64, len(expCats))
 		expByCat := make([]gin.H, len(expCats))
 		for i, r := range expCats {
+			spentByCat[r.Category] = r.Total
 			pct := 0
 			if exp > 0 {
 				pct = int(r.Total) * 100 / exp
@@ -104,7 +132,7 @@ func Dashboard(db *gorm.DB) gin.HandlerFunc {
 		// Income by category
 		var incCats []catRow
 		db.Model(&models.Income{}).Select("category, SUM(amount) as total").
-			Where("user_id = ? AND TO_CHAR(date, 'YYYY-MM') = ?", uid, month).
+			Where("user_id = ? AND date >= ? AND date < ?", uid, w.Start, w.End).
 			Group("category").Scan(&incCats)
 		incByCat := make([]gin.H, len(incCats))
 		for i, r := range incCats {
@@ -115,14 +143,14 @@ func Dashboard(db *gorm.DB) gin.HandlerFunc {
 			incByCat[i] = gin.H{"category": r.Category, "amount": r.Total, "pct": pct}
 		}
 
-		// Budget statuses
+		// Budget statuses — budgets are monthly, so they track the month that
+		// contains the selected window (spent is scoped to the window itself).
+		budgetMonth := w.Start.Format("2006-01")
 		var budgets []models.Budget
-		db.Where("user_id = ? AND month = ?", uid, month).Find(&budgets)
+		db.Where("user_id = ? AND month = ?", uid, budgetMonth).Find(&budgets)
 		budgetStats := make([]gin.H, len(budgets))
 		for i, b := range budgets {
-			var spent int64
-			db.Model(&models.Expense{}).Select("COALESCE(SUM(amount), 0)").
-				Where("user_id = ? AND category = ? AND TO_CHAR(date, 'YYYY-MM') = ?", uid, b.Category, month).Scan(&spent)
+			spent := spentByCat[b.Category]
 			budgetStats[i] = gin.H{"category": b.Category, "spent": spent, "limit": b.Limit, "overLimit": int(spent) > b.Limit}
 		}
 
@@ -143,8 +171,9 @@ func Dashboard(db *gorm.DB) gin.HandlerFunc {
 			}
 		}
 
-		c.JSON(http.StatusOK, gin.H{
-			"month": month, "balance": totalBalance(db, uid),
+		payload := gin.H{
+			"month": budgetMonth, "date": dayParam(w), "label": w.Label, "isDay": w.IsDay,
+			"balance":     totalBalance(db, uid),
 			"monthIncome": inc, "monthExpense": exp, "monthNet": inc - exp,
 			"expenseCount": expenseCount, "incomeCount": incomeCount,
 			"savingsRatePct":    savingsRate,
@@ -157,6 +186,9 @@ func Dashboard(db *gorm.DB) gin.HandlerFunc {
 				"openCount":    openCount,
 				"settledCount": settledCount,
 			},
-		})
+		}
+
+		cache.Set(cacheKey, payload, 45*time.Second)
+		c.JSON(http.StatusOK, payload)
 	}
 }

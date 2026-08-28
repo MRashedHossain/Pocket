@@ -70,13 +70,21 @@ Response `200` — updated user object.
 
 ## Dashboard
 
-Read-only aggregates computed server-side.
+Read-only aggregates computed server-side. Responses are cached in-memory
+per-user for ~45s and invalidated on any write.
 
-### `GET /dashboard?month=2026-08`
-Full dashboard payload for a given month.
+### `GET /dashboard?month=2026-08` · `GET /dashboard?date=2026-08-29`
+Full dashboard payload for a window. Pass `date=YYYY-MM-DD` for a single day, or
+`month=YYYY-MM` for a whole month (default: current month). `date` wins if both
+are given. All figures (`monthIncome`, `monthExpense`, `expenseByCategory`, …)
+are scoped to the selected window; `label`/`isDay` describe it. `budgets` always
+track the month containing the window.
 ```json
 {
   "month": "2026-08",
+  "date": "",
+  "label": "August 2026",
+  "isDay": false,
   "balance": 214830,
   "monthIncome": 124900,
   "monthExpense": 30480,
@@ -103,8 +111,9 @@ Full dashboard payload for a given month.
 }
 ```
 
-### `GET /dashboard/summary?month=2026-08`
-Lightweight summary for header widgets.
+### `GET /dashboard/summary?month=2026-08` · `?date=2026-08-29`
+Lightweight summary for header widgets. Same `month` / `date` window rules as
+`/dashboard`.
 ```json
 {
   "month": "2026-08",
@@ -144,7 +153,7 @@ Monthly income/expense series for the trend chart.
 
 | Method | Path | Description |
 |---|---|---|
-| GET | `/income?month=2026-08` | List income entries; omit `month` for all |
+| GET | `/income?month=2026-08` | List income entries; `date=YYYY-MM-DD` for one day; omit both for all |
 | POST | `/income` | Create — body `{ date, category, amount, note? }` |
 | GET | `/income/{id}` | Fetch one |
 | PATCH | `/income/{id}` | Update any mutable field |
@@ -184,7 +193,7 @@ Monthly income/expense series for the trend chart.
 
 | Method | Path | Description |
 |---|---|---|
-| GET | `/expenses?month=2026-08` | List expenses; omit `month` for all |
+| GET | `/expenses?month=2026-08` | List expenses; `date=YYYY-MM-DD` for one day; omit both for all |
 | POST | `/expenses` | Create — body `{ date, category, amount, note?, method? }` |
 | GET | `/expenses/{id}` | Fetch one |
 | PATCH | `/expenses/{id}` | Update any mutable field |

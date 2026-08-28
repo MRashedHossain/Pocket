@@ -134,6 +134,7 @@ a:hover { color: var(--coral); }
   box-shadow: 0 8px 20px rgba(255,106,77,0.34);
 }
 .btn-coral:hover { background: #ff5233; }
+.btn-coral:disabled { opacity: 0.6; cursor: default; box-shadow: none; }
 
 .btn-violet {
   min-height: 46px;

@@ -2,8 +2,10 @@ package handlers
 
 import (
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/MRashedHossain/pocket/internal/cache"
 	"github.com/MRashedHossain/pocket/internal/models"
 	"gorm.io/gorm"
 )
@@ -17,14 +19,25 @@ func getOrCreateSettings(db *gorm.DB, userID string) models.UserSettings {
 	return s
 }
 
+func settingsPayload(s models.UserSettings) gin.H {
+	return gin.H{
+		"currencySymbol": s.CurrencySymbol,
+		"density":        s.Density,
+		"showTrend":      s.ShowTrend,
+	}
+}
+
 func GetSettings(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		s := getOrCreateSettings(db, currentUser(c).ID)
-		c.JSON(http.StatusOK, gin.H{
-			"currencySymbol": s.CurrencySymbol,
-			"density":        s.Density,
-			"showTrend":      s.ShowTrend,
-		})
+		uid := currentUser(c).ID
+		key := uid + ":settings"
+		if cached, hit := cache.Get(key); hit {
+			c.JSON(http.StatusOK, cached)
+			return
+		}
+		payload := settingsPayload(getOrCreateSettings(db, uid))
+		cache.Set(key, payload, 10*time.Minute)
+		c.JSON(http.StatusOK, payload)
 	}
 }
 
@@ -47,11 +60,7 @@ func UpdateSettings(db *gorm.DB) gin.HandlerFunc {
 			s.ShowTrend = *body.ShowTrend
 		}
 		db.Save(&s)
-		c.JSON(http.StatusOK, gin.H{
-			"currencySymbol": s.CurrencySymbol,
-			"density":        s.Density,
-			"showTrend":      s.ShowTrend,
-		})
+		c.JSON(http.StatusOK, settingsPayload(s))
 	}
 }
 

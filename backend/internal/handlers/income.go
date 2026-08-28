@@ -2,8 +2,10 @@ package handlers
 
 import (
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/MRashedHossain/pocket/internal/cache"
 	"github.com/MRashedHossain/pocket/internal/models"
 	"gorm.io/gorm"
 )
@@ -12,8 +14,15 @@ import (
 
 func ListIncomeCategories(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
+		uid := currentUser(c).ID
+		key := uid + ":cats:income"
+		if cached, hit := cache.Get(key); hit {
+			c.JSON(http.StatusOK, cached)
+			return
+		}
 		var cats []models.IncomeCategory
-		db.Where("user_id = ?", currentUser(c).ID).Find(&cats)
+		db.Where("user_id = ?", uid).Find(&cats)
+		cache.Set(key, cats, 10*time.Minute)
 		c.JSON(http.StatusOK, cats)
 	}
 }
@@ -83,8 +92,14 @@ func ListIncome(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var items []models.Income
 		q := db.Where("user_id = ?", currentUser(c).ID)
-		if month := c.Query("month"); month != "" {
-			q = q.Where("TO_CHAR(date, 'YYYY-MM') = ?", month)
+		if day := c.Query("date"); day != "" {
+			if w, ok := dayWindow(day); ok {
+				q = q.Where("date >= ? AND date < ?", w.Start, w.End)
+			}
+		} else if month := c.Query("month"); month != "" {
+			if w, ok := monthWindow(month); ok {
+				q = q.Where("date >= ? AND date < ?", w.Start, w.End)
+			}
 		}
 		q.Order("date desc").Find(&items)
 		out := make([]incomeOut, len(items))

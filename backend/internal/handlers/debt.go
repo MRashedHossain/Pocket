@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/MRashedHossain/pocket/internal/cache"
 	"github.com/MRashedHossain/pocket/internal/models"
 	"gorm.io/gorm"
 )
@@ -46,8 +47,15 @@ func toDebtOut(db *gorm.DB, d models.Debt) debtOut {
 
 func ListDebtCategories(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
+		uid := currentUser(c).ID
+		key := uid + ":cats:debt"
+		if cached, hit := cache.Get(key); hit {
+			c.JSON(http.StatusOK, cached)
+			return
+		}
 		var cats []models.DebtCategory
-		db.Where("user_id = ?", currentUser(c).ID).Find(&cats)
+		db.Where("user_id = ?", uid).Find(&cats)
+		cache.Set(key, cats, 10*time.Minute)
 		c.JSON(http.StatusOK, cats)
 	}
 }

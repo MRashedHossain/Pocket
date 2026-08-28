@@ -54,7 +54,7 @@ export default function Sidebar() {
   return (
     <aside className="side">
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '6px 12px 18px' }}>
-        <span style={{ width: 34, height: 34, borderRadius: 12, background: '#f9a825', display: 'grid', placeItems: 'center', fontFamily: '"Bricolage Grotesque"', fontWeight: 800, color: '#241f2e', fontSize: 18 }}>৳</span>
+        <img src="/icon.png" alt="Pocket" width="34" height="34" style={{ borderRadius: 12, objectFit: 'cover', display: 'block' }} />
         <span>
           <span style={{ display: 'block', fontFamily: '"Bricolage Grotesque"', fontWeight: 800, fontSize: 18, lineHeight: 1.1 }}>Pocket</span>
           <span style={{ display: 'block', fontSize: 12, color: '#6f6880', fontWeight: 700 }}>{user?.name}</span>

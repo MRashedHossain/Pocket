@@ -12,6 +12,10 @@ import (
 	"gorm.io/gorm"
 )
 
+// BcryptCost is the work factor used for password hashing. Set once from config
+// at startup; defaults to the bcrypt library default.
+var BcryptCost = bcrypt.DefaultCost
+
 func makeToken(userID, secret string, expMins int) (string, error) {
 	claims := jwt.MapClaims{
 		"sub": userID,
@@ -49,7 +53,7 @@ func Register(db *gorm.DB, secret string, expMins int) gin.HandlerFunc {
 			return
 		}
 
-		hash, _ := bcrypt.GenerateFromPassword([]byte(body.Password), bcrypt.DefaultCost)
+		hash, _ := bcrypt.GenerateFromPassword([]byte(body.Password), BcryptCost)
 		user := models.User{Name: body.Name, Email: body.Email, HashedPassword: string(hash)}
 		if err := db.Create(&user).Error; err != nil {
 			errResp(c, http.StatusInternalServerError, "server_error", "Failed to create user")
@@ -147,7 +151,7 @@ func UpdateMe(db *gorm.DB) gin.HandlerFunc {
 				validationErr(c, "Password must be at least 6 characters")
 				return
 			}
-			hash, _ := bcrypt.GenerateFromPassword([]byte(*body.Password), bcrypt.DefaultCost)
+			hash, _ := bcrypt.GenerateFromPassword([]byte(*body.Password), BcryptCost)
 			u.HashedPassword = string(hash)
 		}
 

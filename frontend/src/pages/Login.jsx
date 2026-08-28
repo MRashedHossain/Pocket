@@ -7,28 +7,32 @@ export default function Login() {
   const navigate = useNavigate()
   const [form, setForm] = useState({ email: '', password: '' })
   const [error, setError] = useState('')
+  const [busy, setBusy] = useState(false)
 
   const submit = async e => {
     e.preventDefault()
+    if (busy) return
     setError('')
+    setBusy(true)
     try {
       await login(form.email, form.password)
       navigate('/dashboard')
     } catch (err) {
       setError(err.response?.data?.error?.message || 'Login failed')
+      setBusy(false)
     }
   }
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh', minHeight: '100dvh', flexDirection: 'column' }}>
       <div className="login-mobile-header">
-        <span style={{ width: 32, height: 32, borderRadius: 10, background: '#f9a825', display: 'grid', placeItems: 'center', fontFamily: '"Bricolage Grotesque"', fontWeight: 800, color: '#241f2e', fontSize: 16 }}>৳</span>
+        <img src="/icon.png" alt="Pocket" width="32" height="32" style={{ borderRadius: 10, objectFit: 'cover', display: 'block' }} />
         <span style={{ fontFamily: '"Bricolage Grotesque"', fontWeight: 800, fontSize: 18, letterSpacing: '-0.01em' }}>Pocket</span>
       </div>
       <div style={{ display: 'flex', flex: 1, minHeight: 0 }}>
       <div className="login-art" style={{ flex: '1 1 46%', background: '#7b5cf0', minWidth: 0, color: '#fff', padding: 44, flexDirection: 'column', justifyContent: 'space-between' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <span style={{ width: 34, height: 34, borderRadius: 12, background: '#f9a825', display: 'grid', placeItems: 'center', fontFamily: '"Bricolage Grotesque"', fontWeight: 800, color: '#241f2e', fontSize: 18 }}>৳</span>
+          <img src="/icon.png" alt="Pocket" width="34" height="34" style={{ borderRadius: 12, objectFit: 'cover', display: 'block' }} />
           <span style={{ fontFamily: '"Bricolage Grotesque"', fontWeight: 800, fontSize: 19, letterSpacing: '-0.01em' }}>Pocket</span>
         </div>
         <div>
@@ -67,7 +71,9 @@ export default function Login() {
             <div style={{ background: '#ffe3dc', color: '#9c2f1a', borderRadius: 14, padding: '10px 14px', fontSize: 13.5, fontWeight: 700 }}>{error}</div>
           )}
 
-          <button type="submit" className="btn-coral" style={{ width: '100%' }}>Let me in</button>
+          <button type="submit" className="btn-coral" style={{ width: '100%' }} disabled={busy}>
+            {busy ? 'Signing in…' : 'Let me in'}
+          </button>
 
           <p style={{ textAlign: 'center', fontSize: 13, color: '#6f6880', margin: 0 }}>
             No account?{' '}

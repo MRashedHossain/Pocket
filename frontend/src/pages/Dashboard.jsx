@@ -59,14 +59,25 @@ function DonutChart({ segments, label, total }) {
 
 export default function Dashboard() {
   const [data, setData] = useState(null)
+  const [view, setView] = useState('month') // 'month' | 'day'
   const [month, setMonth] = useState(() => new Date().toISOString().slice(0, 7))
+  const [day, setDay] = useState(() => new Date().toISOString().slice(0, 10))
 
   useEffect(() => {
-    api.get(`/dashboard?month=${month}`).then(r => setData(r.data)).catch(() => {})
-  }, [month])
+    const q = view === 'day' ? `date=${day}` : `month=${month}`
+    setData(null)
+    api.get(`/dashboard?${q}`).then(r => setData(r.data)).catch(() => {})
+  }, [view, month, day])
 
-  const monthLabel = month ? mNames[Number(month.split('-')[1]) - 1] + ' ' + month.split('-')[0] : ''
-  const shortMonth = month ? mNames[Number(month.split('-')[1]) - 1]?.slice(0, 3) : ''
+  const isDay = view === 'day'
+  const [dy, dm, dd] = day.split('-')
+  const monthLabel = data?.label
+    || (isDay
+      ? `${Number(dd)} ${mNames[Number(dm) - 1]} ${dy}`
+      : (month ? mNames[Number(month.split('-')[1]) - 1] + ' ' + month.split('-')[0] : ''))
+  const shortMonth = isDay
+    ? `${mNames[Number(dm) - 1]?.slice(0, 3)} ${Number(dd)}`
+    : (month ? mNames[Number(month.split('-')[1]) - 1]?.slice(0, 3) : '')
 
   const expSegs = (data?.expenseByCategory || []).map((c, i) => ({ ...c, color: COLORS[i % COLORS.length] }))
   const incSegs = (data?.incomeByCategory || []).map((c, i) => ({ ...c, color: COLORS[i % COLORS.length] }))
@@ -78,8 +89,25 @@ export default function Dashboard() {
           <h1 style={{ fontSize: 24, fontWeight: 800 }}>Dashboard</h1>
           <p style={{ margin: '2px 0 0', color: '#6f6880', fontSize: 13 }}>{monthLabel}</p>
         </div>
-        <input type="month" value={month} onChange={e => setMonth(e.target.value)}
-          className="inp" style={{ width: 'auto', minHeight: 40, padding: '8px 12px', fontSize: 14, flexShrink: 0 }} />
+        <div style={{ display: 'inline-flex', background: '#f0e5d7', borderRadius: 999, padding: 3, flexShrink: 0 }}>
+          {['month', 'day'].map(v => (
+            <button key={v} onClick={() => setView(v)}
+              style={{
+                border: 0, cursor: 'pointer', borderRadius: 999, padding: '6px 14px',
+                fontSize: 13, fontWeight: 700, textTransform: 'capitalize',
+                background: view === v ? '#fff' : 'transparent',
+                color: view === v ? '#2a2438' : '#6f6880',
+                boxShadow: view === v ? '0 1px 3px rgba(0,0,0,0.12)' : 'none',
+              }}>{v}</button>
+          ))}
+        </div>
+        {isDay ? (
+          <input type="date" value={day} onChange={e => setDay(e.target.value)}
+            className="inp" style={{ width: 'auto', minHeight: 40, padding: '8px 12px', fontSize: 14, flexShrink: 0 }} />
+        ) : (
+          <input type="month" value={month} onChange={e => setMonth(e.target.value)}
+            className="inp" style={{ width: 'auto', minHeight: 40, padding: '8px 12px', fontSize: 14, flexShrink: 0 }} />
+        )}
       </div>
 
       {!data ? (
@@ -90,7 +118,7 @@ export default function Dashboard() {
             <StatCard label="In your pocket" value={fmt(data.balance)} sub="All time net" bg="#dcf7ea" ink="#0b6b52" subColor="#0d7a5d" />
             <StatCard label={`Came in — ${shortMonth}`} value={fmt(data.monthIncome)} sub={`${data.incomeCount} payment${data.incomeCount !== 1 ? 's' : ''}`} bg="#eae1ff" ink="#54407f" subColor="#5c4a86" />
             <StatCard label={`Went out — ${shortMonth}`} value={fmt(data.monthExpense)} sub={`${data.expenseCount} expense${data.expenseCount !== 1 ? 's' : ''}`} bg="#ffe3dc" ink="#9c3a22" subColor="#a4462f" />
-            <StatCard label="Kept this month" value={(data.monthNet < 0 ? '−' : '') + fmt(Math.abs(data.monthNet))} sub={data.monthIncome > 0 ? `${data.savingsRatePct}% saved` : 'Nothing in yet'} bg="#fff1cc" ink="#7a5300" subColor="#856000" />
+            <StatCard label={isDay ? 'Kept that day' : 'Kept this month'} value={(data.monthNet < 0 ? '−' : '') + fmt(Math.abs(data.monthNet))} sub={data.monthIncome > 0 ? `${data.savingsRatePct}% saved` : 'Nothing in yet'} bg="#fff1cc" ink="#7a5300" subColor="#856000" />
           </div>
 
           <div className="section-grid-2">
@@ -100,7 +128,7 @@ export default function Dashboard() {
                 <div style={{ fontSize: 13, color: '#6f6880', marginTop: 2 }}>{monthLabel} · by category</div>
               </div>
               {expSegs.length === 0
-                ? <p style={{ color: '#6f6880', fontSize: 14 }}>No expenses this month</p>
+                ? <p style={{ color: '#6f6880', fontSize: 14 }}>No expenses {isDay ? 'that day' : 'this month'}</p>
                 : <DonutChart segments={expSegs} label="Spent" total={data.monthExpense} />
               }
             </section>
@@ -111,7 +139,7 @@ export default function Dashboard() {
                 <div style={{ fontSize: 13, color: '#6f6880', marginTop: 2 }}>{monthLabel} · by source</div>
               </div>
               {incSegs.length === 0
-                ? <p style={{ color: '#6f6880', fontSize: 14 }}>No income this month</p>
+                ? <p style={{ color: '#6f6880', fontSize: 14 }}>No income {isDay ? 'that day' : 'this month'}</p>
                 : <DonutChart segments={incSegs} label="Earned" total={data.monthIncome} />
               }
             </section>
