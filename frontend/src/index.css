@@ -87,6 +87,29 @@ a:hover { color: var(--coral); }
 .inp:hover { border-color: #ded0bd; }
 .inp:focus { border-color: var(--violet); box-shadow: 0 0 0 4px rgba(123,92,240,0.16); }
 
+/* DateField: native date input made transparent over a DD-MM-YYYY display */
+.datefield { position: relative; display: flex; align-items: center; cursor: pointer; }
+.datefield:focus-within { border-color: var(--violet); box-shadow: 0 0 0 4px rgba(123,92,240,0.16); }
+.datefield-value { color: var(--ink); }
+.datefield-placeholder { color: #bab2c6; }
+.datefield-native {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: transparent;
+  opacity: 0;
+  -webkit-appearance: none;
+  appearance: none;
+  cursor: pointer;
+}
+/* keep the tap target usable on iOS */
+.datefield-native::-webkit-date-and-time-value { text-align: left; }
+
 .lbl {
   display: block;
   font-size: 12.5px;
