@@ -13,6 +13,7 @@ type Config struct {
 	Port                     string
 	BcryptCost               int
 	CacheTTL                 time.Duration
+	StaticDir                string
 }
 
 func Load() *Config {
@@ -35,6 +36,7 @@ func Load() *Config {
 		Port:                     getEnv("PORT", "8000"),
 		BcryptCost:               cost,
 		CacheTTL:                 time.Duration(cacheSecs) * time.Second,
+		StaticDir:                getEnv("STATIC_DIR", "./web"),
 	}
 }
 

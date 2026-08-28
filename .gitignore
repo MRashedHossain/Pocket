@@ -6,6 +6,7 @@ frontend/.env
 # Backend
 backend/.env
 backend/server
+backend/web/
 
 # OS
 .DS_Store
