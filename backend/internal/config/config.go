@@ -3,6 +3,7 @@ package config
 import (
 	"os"
 	"strconv"
+	"time"
 )
 
 type Config struct {
@@ -11,6 +12,7 @@ type Config struct {
 	AccessTokenExpireMinutes int
 	Port                     string
 	BcryptCost               int
+	CacheTTL                 time.Duration
 }
 
 func Load() *Config {
@@ -21,12 +23,18 @@ func Load() *Config {
 	if cost < 4 || cost > 31 {
 		cost = 10
 	}
+	// In-memory GET response cache TTL. 0 disables caching entirely.
+	cacheSecs, _ := strconv.Atoi(getEnv("CACHE_TTL_SECONDS", "30"))
+	if cacheSecs < 0 {
+		cacheSecs = 0
+	}
 	return &Config{
 		DatabaseURL:              getEnv("DATABASE_URL", "postgres://pocket:pocket@localhost:5432/pocket?sslmode=disable"),
 		SecretKey:                getEnv("SECRET_KEY", "change-this-in-production"),
 		AccessTokenExpireMinutes: expMins,
 		Port:                     getEnv("PORT", "8000"),
 		BcryptCost:               cost,
+		CacheTTL:                 time.Duration(cacheSecs) * time.Second,
 	}
 }
 

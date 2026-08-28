@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/MRashedHossain/pocket/internal/cache"
 	"github.com/MRashedHossain/pocket/internal/models"
 	"gorm.io/gorm"
 )
@@ -88,12 +87,6 @@ func Dashboard(db *gorm.DB) gin.HandlerFunc {
 			return
 		}
 		uid := currentUser(c).ID
-
-		cacheKey := uid + ":dash:" + w.Key
-		if cached, hit := cache.Get(cacheKey); hit {
-			c.JSON(http.StatusOK, cached)
-			return
-		}
 
 		inc := windowIncome(db, uid, w)
 		exp := windowExpense(db, uid, w)
@@ -188,7 +181,6 @@ func Dashboard(db *gorm.DB) gin.HandlerFunc {
 			},
 		}
 
-		cache.Set(cacheKey, payload, 45*time.Second)
 		c.JSON(http.StatusOK, payload)
 	}
 }

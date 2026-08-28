@@ -2,10 +2,8 @@ package handlers
 
 import (
 	"net/http"
-	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/MRashedHossain/pocket/internal/cache"
 	"github.com/MRashedHossain/pocket/internal/models"
 	"gorm.io/gorm"
 )
@@ -14,15 +12,8 @@ import (
 
 func ListIncomeCategories(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		uid := currentUser(c).ID
-		key := uid + ":cats:income"
-		if cached, hit := cache.Get(key); hit {
-			c.JSON(http.StatusOK, cached)
-			return
-		}
 		var cats []models.IncomeCategory
-		db.Where("user_id = ?", uid).Find(&cats)
-		cache.Set(key, cats, 10*time.Minute)
+		db.Where("user_id = ?", currentUser(c).ID).Find(&cats)
 		c.JSON(http.StatusOK, cats)
 	}
 }

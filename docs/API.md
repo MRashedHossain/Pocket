@@ -14,6 +14,12 @@ Derived from the UI/UX design in `references/design/`.
 - IDs: opaque strings, server-generated
 - `PATCH` is always partial — only supplied fields are updated
 - List endpoints accept optional `?page=1&limit=20` for pagination; omit to return all
+- Caching: every authenticated `GET` is cached in-memory per user (keyed by full
+  request URI) for `CACHE_TTL_SECONDS` (default 30, `0` disables). The cache for a
+  user is wiped on that user's next successful write, so you always see your own
+  changes immediately; the TTL only bounds staleness for data changed by others
+  (e.g. shared projects). The web client additionally caches `GET`s for 15s and
+  clears that on any write.
 - Errors:
 
 ```json
@@ -70,8 +76,8 @@ Response `200` — updated user object.
 
 ## Dashboard
 
-Read-only aggregates computed server-side. Responses are cached in-memory
-per-user for ~45s and invalidated on any write.
+Read-only aggregates computed server-side (cached like every other `GET` — see
+Conventions).
 
 ### `GET /dashboard?month=2026-08` · `GET /dashboard?date=2026-08-29`
 Full dashboard payload for a window. Pass `date=YYYY-MM-DD` for a single day, or

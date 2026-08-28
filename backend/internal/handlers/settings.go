@@ -2,10 +2,8 @@ package handlers
 
 import (
 	"net/http"
-	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/MRashedHossain/pocket/internal/cache"
 	"github.com/MRashedHossain/pocket/internal/models"
 	"gorm.io/gorm"
 )
@@ -29,15 +27,7 @@ func settingsPayload(s models.UserSettings) gin.H {
 
 func GetSettings(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		uid := currentUser(c).ID
-		key := uid + ":settings"
-		if cached, hit := cache.Get(key); hit {
-			c.JSON(http.StatusOK, cached)
-			return
-		}
-		payload := settingsPayload(getOrCreateSettings(db, uid))
-		cache.Set(key, payload, 10*time.Minute)
-		c.JSON(http.StatusOK, payload)
+		c.JSON(http.StatusOK, settingsPayload(getOrCreateSettings(db, currentUser(c).ID)))
 	}
 }
 

@@ -53,7 +53,6 @@ func parseDate(s string) (time.Time, error) {
 type dateWindow struct {
 	Start time.Time
 	End   time.Time
-	Key   string // stable cache-key fragment, e.g. "m:2026-08" or "d:2026-08-29"
 	Label string // human label, e.g. "August 2026" or "29 August 2026"
 	IsDay bool
 }
@@ -67,7 +66,6 @@ func monthWindow(month string) (dateWindow, bool) {
 	return dateWindow{
 		Start: t,
 		End:   t.AddDate(0, 1, 0),
-		Key:   "m:" + month,
 		Label: t.Format("January 2006"),
 		IsDay: false,
 	}, true
@@ -82,7 +80,6 @@ func dayWindow(day string) (dateWindow, bool) {
 	return dateWindow{
 		Start: t,
 		End:   t.AddDate(0, 0, 1),
-		Key:   "d:" + day,
 		Label: t.Format("2 January 2006"),
 		IsDay: true,
 	}, true
