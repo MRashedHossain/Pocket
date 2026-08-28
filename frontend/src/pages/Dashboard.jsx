@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
 import api from '../api/client'
+import PeriodPicker, { usePeriod } from '../components/PeriodPicker'
 
 const COLORS = ['#ff6a4d', '#7b5cf0', '#0fb3a3', '#f9a825', '#2f9bff', '#ff5fa2', '#7fc244']
-const mNames = ['January','February','March','April','May','June','July','August','September','October','November','December']
 
 function fmt(n) { return '৳' + Math.round(n ?? 0).toLocaleString('en-US') }
 
@@ -59,25 +59,19 @@ function DonutChart({ segments, label, total }) {
 
 export default function Dashboard() {
   const [data, setData] = useState(null)
-  const [view, setView] = useState('month') // 'month' | 'day'
-  const [month, setMonth] = useState(() => new Date().toISOString().slice(0, 7))
-  const [day, setDay] = useState(() => new Date().toISOString().slice(0, 10))
+  const period = usePeriod()
 
   useEffect(() => {
-    const q = view === 'day' ? `date=${day}` : `month=${month}`
-    setData(null)
-    api.get(`/dashboard?${q}`).then(r => setData(r.data)).catch(() => {})
-  }, [view, month, day])
+    // Keep the previous numbers on screen while the new window loads — blanking
+    // to a spinner on every month/day change felt slower than it was.
+    let alive = true
+    api.get(`/dashboard?${period.query}`).then(r => { if (alive) setData(r.data) }).catch(() => {})
+    return () => { alive = false }
+  }, [period.query])
 
-  const isDay = view === 'day'
-  const [dy, dm, dd] = day.split('-')
-  const monthLabel = data?.label
-    || (isDay
-      ? `${Number(dd)} ${mNames[Number(dm) - 1]} ${dy}`
-      : (month ? mNames[Number(month.split('-')[1]) - 1] + ' ' + month.split('-')[0] : ''))
-  const shortMonth = isDay
-    ? `${mNames[Number(dm) - 1]?.slice(0, 3)} ${Number(dd)}`
-    : (month ? mNames[Number(month.split('-')[1]) - 1]?.slice(0, 3) : '')
+  const isDay = period.isDay
+  const monthLabel = data?.label || period.label
+  const shortMonth = period.shortLabel
 
   const expSegs = (data?.expenseByCategory || []).map((c, i) => ({ ...c, color: COLORS[i % COLORS.length] }))
   const incSegs = (data?.incomeByCategory || []).map((c, i) => ({ ...c, color: COLORS[i % COLORS.length] }))
@@ -89,25 +83,7 @@ export default function Dashboard() {
           <h1 style={{ fontSize: 24, fontWeight: 800 }}>Dashboard</h1>
           <p style={{ margin: '2px 0 0', color: '#6f6880', fontSize: 13 }}>{monthLabel}</p>
         </div>
-        <div style={{ display: 'inline-flex', background: '#f0e5d7', borderRadius: 999, padding: 3, flexShrink: 0 }}>
-          {['month', 'day'].map(v => (
-            <button key={v} onClick={() => setView(v)}
-              style={{
-                border: 0, cursor: 'pointer', borderRadius: 999, padding: '6px 14px',
-                fontSize: 13, fontWeight: 700, textTransform: 'capitalize',
-                background: view === v ? '#fff' : 'transparent',
-                color: view === v ? '#2a2438' : '#6f6880',
-                boxShadow: view === v ? '0 1px 3px rgba(0,0,0,0.12)' : 'none',
-              }}>{v}</button>
-          ))}
-        </div>
-        {isDay ? (
-          <input type="date" value={day} onChange={e => setDay(e.target.value)}
-            className="inp" style={{ width: 'auto', minHeight: 40, padding: '8px 12px', fontSize: 14, flexShrink: 0 }} />
-        ) : (
-          <input type="month" value={month} onChange={e => setMonth(e.target.value)}
-            className="inp" style={{ width: 'auto', minHeight: 40, padding: '8px 12px', fontSize: 14, flexShrink: 0 }} />
-        )}
+        <PeriodPicker period={period} />
       </div>
 
       {!data ? (

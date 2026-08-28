@@ -24,7 +24,7 @@ api.interceptors.response.use(
 // responses briefly and serve repeat views from memory instead of re-hitting
 // the network. Any write (POST/PATCH/PUT/DELETE) clears the whole cache, and
 // entries expire after TTL_MS regardless.
-const TTL_MS = 15000
+const TTL_MS = 45000
 const cache = new Map() // url -> { at, data }
 
 function cacheKey(url, config) {

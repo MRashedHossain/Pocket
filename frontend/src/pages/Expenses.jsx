@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
 import api from '../api/client'
+import PeriodPicker, { usePeriod } from '../components/PeriodPicker'
+import DateField from '../components/DateField'
 
 const METHODS = ['Cash', 'bKash', 'Card', 'Bank transfer']
 const COLORS = ['#ff6a4d', '#7b5cf0', '#0fb3a3', '#f9a825', '#2f9bff', '#ff5fa2', '#7fc244']
@@ -20,13 +22,13 @@ function Modal({ title, onClose, children }) {
 export default function Expenses() {
   const [items, setItems] = useState([])
   const [cats, setCats] = useState([])
-  const [month, setMonth] = useState(() => new Date().toISOString().slice(0, 7))
+  const period = usePeriod()
   const [modal, setModal] = useState(false)
   const [form, setForm] = useState({ date: new Date().toISOString().slice(0, 10), category: '', amount: '', note: '', method: 'Cash' })
   const [error, setError] = useState('')
 
-  const load = () => api.get(`/expenses?month=${month}`).then(r => setItems(r.data)).catch(() => {})
-  useEffect(() => { load() }, [month])
+  const load = () => api.get(`/expenses?${period.query}`).then(r => setItems(r.data)).catch(() => {})
+  useEffect(() => { load() }, [period.query])
   useEffect(() => {
     api.get('/expense-categories').then(r => { setCats(r.data || []) }).catch(() => {})
   }, [])
@@ -47,18 +49,16 @@ export default function Expenses() {
   }
 
   const colorFor = cat => COLORS[cats.findIndex(c => c.name === cat) % COLORS.length] || COLORS[0]
-  const ml = month ? mNames[Number(month.split('-')[1]) - 1] + ' ' + month.split('-')[0] : ''
 
   return (
     <>
       <div className="page-topbar" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
         <div style={{ flex: 1 }}>
           <h1 style={{ fontSize: 26, fontWeight: 800 }}>Expenses</h1>
-          <p style={{ margin: '4px 0 0', color: '#6f6880', fontSize: 14 }}>{items.length} expenses in {ml}</p>
+          <p style={{ margin: '4px 0 0', color: '#6f6880', fontSize: 14 }}>{items.length} expense{items.length !== 1 ? 's' : ''} · {period.label}</p>
         </div>
         <div className="topbar-controls">
-          <input type="month" value={month} onChange={e => setMonth(e.target.value)}
-            className="inp" style={{ width: 'auto', minHeight: 40, padding: '8px 14px', fontSize: 14 }} />
+          <PeriodPicker period={period} />
           <button className="btn-violet" onClick={() => setModal(true)} style={{ minHeight: 40, padding: '8px 20px', fontSize: 14, flexShrink: 0 }}>+ Add expense</button>
         </div>
       </div>
@@ -72,7 +72,7 @@ export default function Expenses() {
           </thead>
           <tbody>
             {items.length === 0 ? (
-              <tr><td colSpan={6} style={{ textAlign: 'center', color: '#6f6880', padding: '32px 16px' }}>No expenses this month</td></tr>
+              <tr><td colSpan={6} style={{ textAlign: 'center', color: '#6f6880', padding: '32px 16px' }}>No expenses {period.noun}</td></tr>
             ) : items.map(e => (
               <tr key={e.id}>
                 <td data-label="Date" style={{ color: '#6f6880', fontSize: 14 }}>{fmtDate(e.date)}</td>
@@ -104,7 +104,7 @@ export default function Expenses() {
             <div className="form-row">
               <div>
                 <label className="lbl">Date</label>
-                <input className="inp" type="date" required value={form.date} onChange={e => setForm(f => ({ ...f, date: e.target.value }))} />
+                <DateField required value={form.date} onChange={v => setForm(f => ({ ...f, date: v }))} />
               </div>
               <div>
                 <label className="lbl">Category</label>

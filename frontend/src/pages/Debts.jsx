@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import api from '../api/client'
+import DateField from '../components/DateField'
 
 const mNames = ['January','February','March','April','May','June','July','August','September','October','November','December']
 const fmtDate = s => { if (!s) return ''; const [y,m,d] = s.split('-'); return `${parseInt(d)} ${mNames[parseInt(m)-1]} ${y}` }
@@ -178,7 +179,7 @@ export default function Debts() {
             <div className="form-row">
               <div>
                 <label className="lbl">Pay back by</label>
-                <input className="inp" type="date" value={form.due} onChange={e => setForm(f => ({ ...f, due: e.target.value }))} />
+                <DateField value={form.due} onChange={v => setForm(f => ({ ...f, due: v }))} />
               </div>
               <div>
                 <label className="lbl">What for</label>
