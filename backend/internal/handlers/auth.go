@@ -4,10 +4,10 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/gin-gonic/gin"
-	"github.com/golang-jwt/jwt/v5"
 	"github.com/MRashedHossain/pocket/internal/middleware"
 	"github.com/MRashedHossain/pocket/internal/models"
+	"github.com/gin-gonic/gin"
+	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
@@ -16,10 +16,12 @@ import (
 // at startup; defaults to the bcrypt library default.
 var BcryptCost = bcrypt.DefaultCost
 
-func makeToken(userID, secret string, expMins int) (string, error) {
+func makeToken(userID, name, email, secret string, expMins int) (string, error) {
 	claims := jwt.MapClaims{
-		"sub": userID,
-		"exp": time.Now().Add(time.Duration(expMins) * time.Minute).Unix(),
+		"sub":   userID,
+		"name":  name,
+		"email": email,
+		"exp":   time.Now().Add(time.Duration(expMins) * time.Minute).Unix(),
 	}
 	return jwt.NewWithClaims(jwt.SigningMethodHS256, claims).SignedString([]byte(secret))
 }
@@ -61,7 +63,7 @@ func Register(db *gorm.DB, secret string, expMins int) gin.HandlerFunc {
 		}
 		db.Create(&models.UserSettings{UserID: user.ID})
 
-		token, _ := makeToken(user.ID, secret, expMins)
+		token, _ := makeToken(user.ID, user.Name, user.Email, secret, expMins)
 		c.JSON(http.StatusCreated, authOut{Token: token, User: userOut{ID: user.ID, Name: user.Name, Email: user.Email}})
 	}
 }
@@ -87,7 +89,7 @@ func Login(db *gorm.DB, secret string, expMins int) gin.HandlerFunc {
 			return
 		}
 
-		token, _ := makeToken(user.ID, secret, expMins)
+		token, _ := makeToken(user.ID, user.Name, user.Email, secret, expMins)
 		c.JSON(http.StatusOK, authOut{Token: token, User: userOut{ID: user.ID, Name: user.Name, Email: user.Email}})
 	}
 }
