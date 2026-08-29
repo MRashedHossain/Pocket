@@ -9,3 +9,5 @@ backend/server
 
 # OS
 .DS_Store
+
+.idea
