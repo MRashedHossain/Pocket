@@ -26,19 +26,26 @@ export default function Projects() {
   const [memberEmail, setMemberEmail] = useState('')
   const [memberError, setMemberError] = useState('')
   const [memberLoading, setMemberLoading] = useState(false)
+  const [saving, setSaving] = useState(false)
 
   const load = () => api.get('/projects').then(r => setProjects(r.data)).catch(() => {})
   useEffect(() => { load() }, [])
 
   const submit = async e => {
     e.preventDefault()
-    await api.post('/projects', { ...form, target: Number(form.target) || 0 })
-    setModal(null); setForm({ name: '', target: '', note: '' }); load()
+    if (saving) return
+    setSaving(true)
+    try {
+      await api.post('/projects', { ...form, target: Number(form.target) || 0 })
+      setModal(null); setForm({ name: '', target: '', note: '' }); load()
+    } finally { setSaving(false) }
   }
 
   const del = async id => {
     if (!confirm('Delete project?')) return
-    await api.delete(`/projects/${id}`); load()
+    try {
+      await api.delete(`/projects/${id}`); load()
+    } catch (err) { alert(err.response?.data?.error?.message || 'Could not delete project') }
   }
 
   const openAddMember = (project) => {
@@ -119,8 +126,9 @@ export default function Projects() {
                 )}
                 <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
                   {(p.members || []).map((m) => (
-                    <span key={m} style={{ background: '#f0e5d7', color: '#241f2e', borderRadius: 999, padding: '4px 10px', fontSize: 12.5, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 4 }}>
-                      {initials(m)}
+                    <span key={m} style={{ background: '#f0e5d7', color: '#241f2e', borderRadius: 999, padding: '4px 10px', fontSize: 12.5, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <span style={{ width: 18, height: 18, borderRadius: '50%', background: '#e2d4bf', display: 'grid', placeItems: 'center', fontSize: 10, flexShrink: 0 }}>{initials(m)}</span>
+                      {m}
                       <button onClick={() => removeMember(p.id, m)} title="Remove" style={{ background: 'none', border: 0, cursor: 'pointer', color: '#b0a8bd', fontSize: 11, padding: 0, lineHeight: 1, display: 'flex', alignItems: 'center' }}
                         onMouseEnter={e => e.currentTarget.style.color = '#ff6a4d'}
                         onMouseLeave={e => e.currentTarget.style.color = '#b0a8bd'}>×</button>
@@ -151,7 +159,7 @@ export default function Projects() {
             </div>
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10 }}>
               <button type="button" className="btn-ghost" onClick={() => setModal(null)}>Never mind</button>
-              <button type="submit" className="btn-violet">Create pot</button>
+              <button type="submit" className="btn-violet" disabled={saving}>{saving ? 'Creating…' : 'Create pot'}</button>
             </div>
           </form>
         </Modal>

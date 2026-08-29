@@ -250,7 +250,16 @@ func DeleteDebt(db *gorm.DB) gin.HandlerFunc {
 			notFound(c, "Debt")
 			return
 		}
-		db.Delete(&d)
+		err := db.Transaction(func(tx *gorm.DB) error {
+			if err := tx.Where("debt_id = ?", d.ID).Delete(&models.Payment{}).Error; err != nil {
+				return err
+			}
+			return tx.Delete(&d).Error
+		})
+		if err != nil {
+			errResp(c, http.StatusInternalServerError, "delete_failed", "Could not delete IOU")
+			return
+		}
 		c.Status(http.StatusNoContent)
 	}
 }
