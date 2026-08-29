@@ -160,7 +160,19 @@ func DeleteProject(db *gorm.DB) gin.HandlerFunc {
 			notFound(c, "Project")
 			return
 		}
-		db.Delete(&p)
+		err := db.Transaction(func(tx *gorm.DB) error {
+			if err := tx.Where("project_id = ?", p.ID).Delete(&models.Contribution{}).Error; err != nil {
+				return err
+			}
+			if err := tx.Where("project_id = ?", p.ID).Delete(&models.ProjectMember{}).Error; err != nil {
+				return err
+			}
+			return tx.Delete(&p).Error
+		})
+		if err != nil {
+			errResp(c, http.StatusInternalServerError, "delete_failed", "Could not delete project")
+			return
+		}
 		c.Status(http.StatusNoContent)
 	}
 }

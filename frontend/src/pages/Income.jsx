@@ -25,6 +25,7 @@ export default function Income() {
   const [modal, setModal] = useState(false)
   const [form, setForm] = useState({ date: new Date().toISOString().slice(0, 10), category: '', amount: '', note: '' })
   const [error, setError] = useState('')
+  const [saving, setSaving] = useState(false)
 
   const load = () => api.get(`/income?${period.query}`).then(r => setItems(r.data)).catch(() => {})
   useEffect(() => { load() }, [period.query])
@@ -33,13 +34,15 @@ export default function Income() {
   }, [])
 
   const submit = async e => {
-    e.preventDefault(); setError('')
+    e.preventDefault()
+    if (saving) return
+    setError(''); setSaving(true)
     try {
       await api.post('/income', { ...form, amount: Number(form.amount) })
       setModal(false)
       setForm({ date: new Date().toISOString().slice(0, 10), category: '', amount: '', note: '' })
       load()
-    } catch (err) { setError(err.response?.data?.error?.message || 'Failed to save') }
+    } catch (err) { setError(err.response?.data?.error?.message || 'Failed to save') } finally { setSaving(false) }
   }
 
   const del = async id => {
@@ -129,7 +132,7 @@ export default function Income() {
             {error && <div style={{ background: '#ffe3dc', color: '#9c2f1a', borderRadius: 14, padding: '10px 14px', fontSize: 13.5, fontWeight: 700 }}>{error}</div>}
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10 }}>
               <button type="button" className="btn-ghost" onClick={() => setModal(false)}>Never mind</button>
-              <button type="submit" className="btn-violet">Log it</button>
+              <button type="submit" className="btn-violet" disabled={saving}>{saving ? 'Logging…' : 'Log it'}</button>
             </div>
           </form>
         </Modal>

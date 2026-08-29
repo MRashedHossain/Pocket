@@ -4,12 +4,17 @@ import { useAuth } from '../contexts/AuthContext'
 
 function CategoryManager({ title, cats, onAdd, onDelete }) {
   const [name, setName] = useState('')
+  const [saving, setSaving] = useState(false)
   const submit = async e => {
     e.preventDefault()
+    if (saving) return
     const trimmed = name.trim()
     if (!trimmed) return
-    await onAdd(trimmed)
-    setName('')
+    setSaving(true)
+    try {
+      await onAdd(trimmed)
+      setName('')
+    } finally { setSaving(false) }
   }
   return (
     <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
@@ -30,8 +35,8 @@ function CategoryManager({ title, cats, onAdd, onDelete }) {
       <form onSubmit={submit} style={{ display: 'flex', gap: 8 }}>
         <input className="inp" style={{ flex: 1 }} placeholder="New category…" value={name}
           onChange={e => setName(e.target.value)} />
-        <button type="submit" className="btn-violet"
-          style={{ flexShrink: 0, minHeight: 40, padding: '8px 16px', fontSize: 14 }}>Add</button>
+        <button type="submit" className="btn-violet" disabled={saving}
+          style={{ flexShrink: 0, minHeight: 40, padding: '8px 16px', fontSize: 14 }}>{saving ? 'Adding…' : 'Add'}</button>
       </form>
     </div>
   )

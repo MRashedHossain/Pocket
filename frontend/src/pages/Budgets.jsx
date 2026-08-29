@@ -20,14 +20,19 @@ export default function Budgets() {
   const [month, setMonth] = useState(() => new Date().toISOString().slice(0, 7))
   const [modal, setModal] = useState(false)
   const [form, setForm] = useState({ category: '', limit: '' })
+  const [saving, setSaving] = useState(false)
 
   const load = () => api.get(`/budgets?month=${month}`).then(r => setBudgets(r.data)).catch(() => {})
   useEffect(() => { load() }, [month])
 
   const submit = async e => {
     e.preventDefault()
-    await api.post('/budgets', { category: form.category, month, limit: Number(form.limit) })
-    setModal(false); setForm({ category: '', limit: '' }); load()
+    if (saving) return
+    setSaving(true)
+    try {
+      await api.post('/budgets', { category: form.category, month, limit: Number(form.limit) })
+      setModal(false); setForm({ category: '', limit: '' }); load()
+    } finally { setSaving(false) }
   }
 
   const del = async id => {
@@ -101,7 +106,7 @@ export default function Budgets() {
             </div>
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10 }}>
               <button type="button" className="btn-ghost" onClick={() => setModal(false)}>Never mind</button>
-              <button type="submit" className="btn-violet">Save</button>
+              <button type="submit" className="btn-violet" disabled={saving}>{saving ? 'Saving…' : 'Save'}</button>
             </div>
           </form>
         </Modal>

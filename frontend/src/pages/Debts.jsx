@@ -33,6 +33,8 @@ export default function Debts() {
   const [form, setForm] = useState({ kind: 'lent', person: '', amount: '', due: '', note: '', category: '' })
   const [payForm, setPayForm] = useState({ amount: '', note: '' })
   const [error, setError] = useState('')
+  const [saving, setSaving] = useState(false)
+  const [paying, setPaying] = useState(false)
 
   const load = () => api.get('/debts').then(r => setDebts(r.data)).catch(() => {})
   useEffect(() => {
@@ -41,24 +43,30 @@ export default function Debts() {
   }, [])
 
   const submit = async e => {
-    e.preventDefault(); setError('')
+    e.preventDefault()
+    if (saving) return
+    setError(''); setSaving(true)
     try {
       await api.post('/debts', { ...form, amount: Number(form.amount), due: form.due || undefined, category: form.category })
       setModal(null); setForm({ kind: 'lent', person: '', amount: '', due: '', note: '', category: '' }); load()
-    } catch (err) { setError(err.response?.data?.error?.message || 'Failed to save') }
+    } catch (err) { setError(err.response?.data?.error?.message || 'Failed to save') } finally { setSaving(false) }
   }
 
   const submitPayment = async e => {
     e.preventDefault()
+    if (paying) return
+    setPaying(true)
     try {
       await api.post(`/debts/${payDebt.id}/payments`, { amount: Number(payForm.amount), note: payForm.note })
       setPayDebt(null); setPayForm({ amount: '', note: '' }); load()
-    } catch (err) { alert(err.response?.data?.error?.message || 'Failed') }
+    } catch (err) { alert(err.response?.data?.error?.message || 'Failed') } finally { setPaying(false) }
   }
 
   const del = async id => {
     if (!confirm('Delete this IOU?')) return
-    await api.delete(`/debts/${id}`); load()
+    try {
+      await api.delete(`/debts/${id}`); load()
+    } catch (err) { alert(err.response?.data?.error?.message || 'Could not delete IOU') }
   }
 
   const open = debts.filter(d => !d.settled)
@@ -189,7 +197,7 @@ export default function Debts() {
             {error && <div style={{ background: '#ffe3dc', color: '#9c2f1a', borderRadius: 14, padding: '10px 14px', fontSize: 13.5, fontWeight: 700 }}>{error}</div>}
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10 }}>
               <button type="button" className="btn-ghost" onClick={() => setModal(null)}>Never mind</button>
-              <button type="submit" className="btn-violet">Save</button>
+              <button type="submit" className="btn-violet" disabled={saving}>{saving ? 'Saving…' : 'Save'}</button>
             </div>
           </form>
         </Modal>
@@ -209,7 +217,7 @@ export default function Debts() {
             </div>
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10 }}>
               <button type="button" className="btn-ghost" onClick={() => setPayDebt(null)}>Cancel</button>
-              <button type="submit" className="btn-violet">Record payment</button>
+              <button type="submit" className="btn-violet" disabled={paying}>{paying ? 'Recording…' : 'Record payment'}</button>
             </div>
           </form>
         </Modal>

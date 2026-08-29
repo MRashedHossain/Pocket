@@ -20,14 +20,19 @@ export default function Accounts() {
   const [accounts, setAccounts] = useState([])
   const [modal, setModal] = useState(false)
   const [form, setForm] = useState({ name: '', type: 'cash', balance: '', note: '' })
+  const [saving, setSaving] = useState(false)
 
   const load = () => api.get('/accounts').then(r => setAccounts(r.data)).catch(() => {})
   useEffect(() => { load() }, [])
 
   const submit = async e => {
     e.preventDefault()
-    await api.post('/accounts', { ...form, balance: Number(form.balance) })
-    setModal(false); setForm({ name: '', type: 'cash', balance: '', note: '' }); load()
+    if (saving) return
+    setSaving(true)
+    try {
+      await api.post('/accounts', { ...form, balance: Number(form.balance) })
+      setModal(false); setForm({ name: '', type: 'cash', balance: '', note: '' }); load()
+    } finally { setSaving(false) }
   }
 
   const del = async id => {
@@ -97,7 +102,7 @@ export default function Accounts() {
             </div>
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10 }}>
               <button type="button" className="btn-ghost" onClick={() => setModal(false)}>Never mind</button>
-              <button type="submit" className="btn-violet">Save</button>
+              <button type="submit" className="btn-violet" disabled={saving}>{saving ? 'Saving…' : 'Save'}</button>
             </div>
           </form>
         </Modal>
