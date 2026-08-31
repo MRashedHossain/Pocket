@@ -121,6 +121,35 @@ export default function Dashboard() {
             </section>
           </div>
 
+          <section className="card" style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+            <div>
+              <h3 style={{ fontSize: 17, fontWeight: 800 }}>Budget check</h3>
+              <div style={{ fontSize: 13, color: '#6f6880', marginTop: 2 }}>{monthLabel}</div>
+            </div>
+            {(data.budgets || []).length === 0 ? (
+              <p style={{ color: '#6f6880', fontSize: 14 }}>No budgets set for this month</p>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                {data.budgets.map((b, i) => {
+                  const pct = b.limit > 0 ? Math.min((b.spent / b.limit) * 100, 100) : 0
+                  const color = b.overLimit ? '#ff6a4d' : COLORS[i % COLORS.length]
+                  return (
+                    <div key={b.category}>
+                      <div style={{ display: 'flex', alignItems: 'baseline', gap: 9, fontSize: 13, marginBottom: 6 }}>
+                        <span style={{ fontWeight: 700, flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{b.category}</span>
+                        <span className="tnum" style={{ color: '#6f6880' }}>{fmt(b.spent)} / {fmt(b.limit)}</span>
+                        {b.overLimit && <span style={{ fontSize: 11, fontWeight: 700, color: '#9c3a22', background: '#ffe3dc', borderRadius: 999, padding: '2px 8px' }}>over</span>}
+                      </div>
+                      <div style={{ height: 8, background: '#f0e5d7', borderRadius: 999, overflow: 'hidden' }}>
+                        <div style={{ height: 8, background: color, borderRadius: 999, width: `${pct}%`, transition: 'width 0.3s' }} />
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+          </section>
+
           <section className="card">
             <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#6f6880', marginBottom: 14 }}>Debts snapshot</div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>

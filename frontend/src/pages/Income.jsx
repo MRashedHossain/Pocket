@@ -21,6 +21,7 @@ function Modal({ title, onClose, children }) {
 export default function Income() {
   const [items, setItems] = useState([])
   const [cats, setCats] = useState([])
+  const [catFilter, setCatFilter] = useState('')
   const period = usePeriod()
   const [modal, setModal] = useState(false)
   const [form, setForm] = useState({ date: new Date().toISOString().slice(0, 10), category: '', amount: '', note: '' })
@@ -52,14 +53,23 @@ export default function Income() {
 
   const colorFor = cat => COLORS[cats.findIndex(c => c.name === cat) % COLORS.length] || COLORS[2]
 
+  const visible = catFilter ? items.filter(i => i.category === catFilter) : items
+
   return (
     <>
       <div className="page-topbar" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
         <div style={{ flex: 1 }}>
           <h1 style={{ fontSize: 26, fontWeight: 800 }}>Income</h1>
-          <p style={{ margin: '4px 0 0', color: '#6f6880', fontSize: 14 }}>{items.length} payment{items.length !== 1 ? 's' : ''} · {period.label}</p>
+          <p style={{ margin: '4px 0 0', color: '#6f6880', fontSize: 14 }}>{visible.length} payment{visible.length !== 1 ? 's' : ''} · {period.label}{catFilter ? ` · ${catFilter}` : ''}</p>
         </div>
         <div className="topbar-controls">
+          {cats.length > 0 && (
+            <select className="inp" value={catFilter} onChange={e => setCatFilter(e.target.value)}
+              style={{ width: 'auto', minHeight: 40, padding: '8px 14px', fontSize: 14 }}>
+              <option value="">All sources</option>
+              {cats.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
+            </select>
+          )}
           <PeriodPicker period={period} />
           <button className="btn-violet" onClick={() => setModal(true)} style={{ minHeight: 40, padding: '8px 20px', fontSize: 14, flexShrink: 0 }}>+ Add income</button>
         </div>
@@ -73,9 +83,9 @@ export default function Income() {
             </tr>
           </thead>
           <tbody>
-            {items.length === 0 ? (
-              <tr><td colSpan={5} style={{ textAlign: 'center', color: '#6f6880', padding: '32px 16px' }}>No income {period.noun}</td></tr>
-            ) : items.map(i => (
+            {visible.length === 0 ? (
+              <tr><td colSpan={5} style={{ textAlign: 'center', color: '#6f6880', padding: '32px 16px' }}>No income {catFilter ? `from ${catFilter} ` : ''}{period.noun}</td></tr>
+            ) : visible.map(i => (
               <tr key={i.id}>
                 <td data-label="Date" style={{ color: '#6f6880', fontSize: 14 }}>{fmtDate(i.date)}</td>
                 <td data-label="Source">
