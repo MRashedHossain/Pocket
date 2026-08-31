@@ -26,6 +26,7 @@ export default function Projects() {
   const [memberEmail, setMemberEmail] = useState('')
   const [memberError, setMemberError] = useState('')
   const [memberLoading, setMemberLoading] = useState(false)
+  const [error, setError] = useState('')
   const [saving, setSaving] = useState(false)
 
   const load = () => api.get('/projects').then(r => setProjects(r.data)).catch(() => {})
@@ -34,10 +35,12 @@ export default function Projects() {
   const submit = async e => {
     e.preventDefault()
     if (saving) return
-    setSaving(true)
+    setError(''); setSaving(true)
     try {
       await api.post('/projects', { ...form, target: Number(form.target) || 0 })
       setModal(null); setForm({ name: '', target: '', note: '' }); load()
+    } catch (err) {
+      setError(err.response?.data?.error?.message || 'Could not create project')
     } finally { setSaving(false) }
   }
 
@@ -91,7 +94,7 @@ export default function Projects() {
           <h1 style={{ fontSize: 26, fontWeight: 800 }}>Projects</h1>
           <p style={{ margin: '4px 0 0', color: '#6f6880', fontSize: 14 }}>{projects.length} pot{projects.length !== 1 ? 's' : ''}</p>
         </div>
-        <button className="btn-violet" onClick={() => setModal('new')} style={{ minHeight: 40, padding: '8px 20px', fontSize: 14, flexShrink: 0 }}>+ New pot</button>
+        <button className="btn-violet" onClick={() => { setError(''); setModal('new') }} style={{ minHeight: 40, padding: '8px 20px', fontSize: 14, flexShrink: 0 }}>+ New pot</button>
       </div>
 
       {projects.length === 0 ? (
@@ -157,6 +160,7 @@ export default function Projects() {
               <label className="lbl">Note</label>
               <input className="inp" type="text" placeholder="Four families, three nights" value={form.note} onChange={e => setForm(f => ({ ...f, note: e.target.value }))} />
             </div>
+            {error && <div style={{ background: '#ffe3dc', color: '#9c2f1a', borderRadius: 14, padding: '10px 14px', fontSize: 13.5, fontWeight: 700 }}>{error}</div>}
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10 }}>
               <button type="button" className="btn-ghost" onClick={() => setModal(null)}>Never mind</button>
               <button type="submit" className="btn-violet" disabled={saving}>{saving ? 'Creating…' : 'Create pot'}</button>

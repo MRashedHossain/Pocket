@@ -52,13 +52,17 @@ func CreateBudget(db *gorm.DB) gin.HandlerFunc {
 		var body struct {
 			Category string `json:"category" binding:"required"`
 			Month    string `json:"month" binding:"required"`
-			Limit    int    `json:"limit" binding:"required"`
+			Limit    *int   `json:"limit" binding:"required"`
 		}
 		if err := c.ShouldBindJSON(&body); err != nil {
 			validationErr(c, err.Error())
 			return
 		}
-		b := models.Budget{UserID: currentUser(c).ID, Category: body.Category, Month: body.Month, Limit: body.Limit}
+		if *body.Limit < 0 {
+			validationErr(c, "Limit cannot be negative")
+			return
+		}
+		b := models.Budget{UserID: currentUser(c).ID, Category: body.Category, Month: body.Month, Limit: *body.Limit}
 		db.Create(&b)
 		c.JSON(http.StatusCreated, enrichBudget(db, b))
 	}

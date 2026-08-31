@@ -17,21 +17,28 @@ function Modal({ title, onClose, children }) {
 
 export default function Budgets() {
   const [budgets, setBudgets] = useState([])
+  const [cats, setCats] = useState([])
   const [month, setMonth] = useState(() => new Date().toISOString().slice(0, 7))
   const [modal, setModal] = useState(false)
   const [form, setForm] = useState({ category: '', limit: '' })
+  const [error, setError] = useState('')
   const [saving, setSaving] = useState(false)
 
   const load = () => api.get(`/budgets?month=${month}`).then(r => setBudgets(r.data)).catch(() => {})
   useEffect(() => { load() }, [month])
+  useEffect(() => {
+    api.get('/expense-categories').then(r => setCats(r.data || [])).catch(() => {})
+  }, [])
 
   const submit = async e => {
     e.preventDefault()
     if (saving) return
-    setSaving(true)
+    setError(''); setSaving(true)
     try {
       await api.post('/budgets', { category: form.category, month, limit: Number(form.limit) })
       setModal(false); setForm({ category: '', limit: '' }); load()
+    } catch (err) {
+      setError(err.response?.data?.error?.message || 'Could not save budget')
     } finally { setSaving(false) }
   }
 
@@ -55,7 +62,7 @@ export default function Budgets() {
         <div className="topbar-controls">
           <input type="month" value={month} onChange={e => setMonth(e.target.value)}
             className="inp" style={{ width: 'auto', minHeight: 40, padding: '8px 14px', fontSize: 14 }} />
-          <button className="btn-violet" onClick={() => setModal(true)} style={{ minHeight: 40, padding: '8px 20px', fontSize: 14, flexShrink: 0 }}>+ Add budget</button>
+          <button className="btn-violet" onClick={() => { setError(''); setModal(true) }} style={{ minHeight: 40, padding: '8px 20px', fontSize: 14, flexShrink: 0 }}>+ Add budget</button>
         </div>
       </div>
 
@@ -98,12 +105,20 @@ export default function Budgets() {
           <form onSubmit={submit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             <div>
               <label className="lbl">Category</label>
-              <input className="inp" type="text" placeholder="e.g. Groceries" required value={form.category} onChange={e => setForm(f => ({ ...f, category: e.target.value }))} />
+              {cats.length === 0 ? (
+                <input className="inp" type="text" placeholder="e.g. Groceries" required value={form.category} onChange={e => setForm(f => ({ ...f, category: e.target.value }))} />
+              ) : (
+                <select className="inp" required value={form.category} onChange={e => setForm(f => ({ ...f, category: e.target.value }))}>
+                  <option value="">Select category…</option>
+                  {cats.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
+                </select>
+              )}
             </div>
             <div>
               <label className="lbl">Monthly cap (৳)</label>
               <input className="inp tnum" type="number" min="0" step="500" placeholder="0" required value={form.limit} onChange={e => setForm(f => ({ ...f, limit: e.target.value }))} />
             </div>
+            {error && <div style={{ background: '#ffe3dc', color: '#9c2f1a', borderRadius: 14, padding: '10px 14px', fontSize: 13.5, fontWeight: 700 }}>{error}</div>}
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10 }}>
               <button type="button" className="btn-ghost" onClick={() => setModal(false)}>Never mind</button>
               <button type="submit" className="btn-violet" disabled={saving}>{saving ? 'Saving…' : 'Save'}</button>
