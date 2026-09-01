@@ -87,33 +87,29 @@ export default function Accounts() {
       {accounts.length === 0 ? (
         <p style={{ color: '#6f6880' }}>No accounts yet. Add your cash, bank, or mobile banking accounts.</p>
       ) : (
-        <div style={{ display: 'grid', gap: 14, gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))' }}>
+        <div className="entity-grid">
           {accounts.map(a => (
             <div key={a.id} className="card">
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <span style={{ width: 36, height: 36, borderRadius: 10, background: TYPE_BG[a.type] || '#f0e5d7', display: 'grid', placeItems: 'center', fontSize: 16, color: TYPE_COLORS[a.type] || '#6f6880' }}>
+              <div className="entity-card-head">
+                <div className="title-block" style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                  <span style={{ width: 42, height: 42, borderRadius: 12, background: TYPE_BG[a.type] || '#f0e5d7', display: 'grid', placeItems: 'center', fontSize: 18, color: TYPE_COLORS[a.type] || '#6f6880', flexShrink: 0 }}>
                     {a.type === 'cash' ? '💵' : a.type === 'bank' ? '🏦' : a.type === 'mobile_banking' ? '📱' : '💳'}
                   </span>
-                  <div>
-                    <div style={{ fontWeight: 700, fontFamily: '"Bricolage Grotesque"', fontSize: 15 }}>{a.name}</div>
-                    <div style={{ fontSize: 12, color: '#6f6880', fontWeight: 700, textTransform: 'capitalize' }}>{a.type.replace('_', ' ')}</div>
+                  <div style={{ minWidth: 0 }}>
+                    <div style={{ fontWeight: 700, fontFamily: '"Bricolage Grotesque"', fontSize: 16, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{a.name}</div>
+                    <div style={{ fontSize: 12.5, color: '#6f6880', fontWeight: 700, textTransform: 'capitalize' }}>{a.type.replace('_', ' ')}</div>
                   </div>
                 </div>
-                <div style={{ display: 'flex', gap: 2, flexShrink: 0 }}>
-                  <button onClick={() => openEdit(a)} style={{ background: 'none', border: 0, cursor: 'pointer', color: '#b0a8bd', fontSize: 13, fontWeight: 700, padding: '4px 8px', borderRadius: 999 }}
-                    onMouseEnter={e => { e.currentTarget.style.color = '#7b5cf0'; e.currentTarget.style.background = '#eae1ff' }}
-                    onMouseLeave={e => { e.currentTarget.style.color = '#b0a8bd'; e.currentTarget.style.background = 'none' }}>Edit</button>
-                  <button onClick={() => del(a.id)} style={{ background: 'none', border: 0, cursor: 'pointer', color: '#b0a8bd', fontSize: 13, fontWeight: 700, padding: '4px 8px', borderRadius: 999 }}
-                    onMouseEnter={e => { e.currentTarget.style.color = '#ff6a4d'; e.currentTarget.style.background = '#ffe9e3' }}
-                    onMouseLeave={e => { e.currentTarget.style.color = '#b0a8bd'; e.currentTarget.style.background = 'none' }}>Delete</button>
+                <div className="entity-card-actions">
+                  <button className="act-edit" onClick={() => openEdit(a)}>Edit</button>
+                  <button className="act-del" onClick={() => del(a.id)}>Delete</button>
                 </div>
               </div>
-              <div className="figure" style={{ marginTop: 16, fontSize: 28 }}>৳{a.balance.toLocaleString()}</div>
-              {a.note && <p style={{ fontSize: 13, color: '#6f6880', marginTop: 6 }}>{a.note}</p>}
-              <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
-                <button className="btn-ghost" style={{ flex: 1, minHeight: 34, fontSize: 13 }} onClick={() => openEdit(a, 'add')}>+ Add money</button>
-                <button className="btn-ghost" style={{ flex: 1, minHeight: 34, fontSize: 13 }} onClick={() => openEdit(a, 'spend')}>− Spend</button>
+              <div className="figure" style={{ fontSize: 30 }}>৳{a.balance.toLocaleString()}</div>
+              {a.note && <p style={{ fontSize: 13, color: '#6f6880', margin: '8px 0 0' }}>{a.note}</p>}
+              <div style={{ display: 'flex', gap: 10, marginTop: 18 }}>
+                <button className="btn-ghost" style={{ flex: 1, minHeight: 38, fontSize: 13.5 }} onClick={() => openEdit(a, 'add')}>+ Add money</button>
+                <button className="btn-ghost" style={{ flex: 1, minHeight: 38, fontSize: 13.5 }} onClick={() => openEdit(a, 'spend')}>− Spend</button>
               </div>
             </div>
           ))}

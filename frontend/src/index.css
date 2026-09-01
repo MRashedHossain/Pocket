@@ -313,8 +313,74 @@ a:hover { color: var(--coral); }
   width: auto;
 }
 
+/* ── Entity card grid (Accounts, Projects, Budgets) ───────────── */
+.entity-grid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 460px));
+}
+.entity-card-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.entity-card-head .title-block { min-width: 0; flex: 1; }
+.entity-card-actions { display: flex; gap: 2px; flex-shrink: 0; }
+.entity-card-actions button {
+  background: none;
+  border: 0;
+  cursor: pointer;
+  color: #b0a8bd;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 5px 10px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+.entity-card-actions .act-edit:hover { color: var(--violet); background: var(--lilac); }
+.entity-card-actions .act-del:hover { color: var(--coral); background: #ffe9e3; }
+
 /* ── Bottom nav (hidden on desktop) ───────────────────────────── */
 .bottom-nav { display: none; }
+
+/* ── "More" sheet (mobile only) ──────────────────────────────── */
+.more-sheet-overlay {
+  position: fixed; inset: 0;
+  background: rgba(36,31,46,0.4);
+  z-index: 300;
+  display: flex; align-items: flex-end;
+}
+.more-sheet {
+  background: #fffdfa;
+  width: 100%;
+  border-radius: 22px 22px 0 0;
+  padding: 10px 18px calc(20px + var(--safe-bottom));
+  display: flex; flex-direction: column; gap: 16px;
+  box-shadow: 0 -14px 40px rgba(36,31,46,0.18);
+}
+.more-sheet-grip {
+  width: 40px; height: 4px; border-radius: 999px;
+  background: var(--line);
+  align-self: center;
+  margin: 4px 0 2px;
+}
+.more-sheet-user { display: flex; align-items: center; gap: 10px; }
+.more-sheet-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.more-sheet-item {
+  display: flex; flex-direction: column; align-items: flex-start; gap: 8px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: #fff;
+  color: var(--ink);
+  text-decoration: none;
+  font-family: 'Bricolage Grotesque', system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 14.5px;
+}
+.more-sheet-item svg { width: 22px; height: 22px; }
 
 /* ══════════════════════════════════════════════════════════════════
    MOBILE  ≤ 768px
@@ -350,7 +416,11 @@ a:hover { color: var(--coral); }
   .figure { font-size: 24px; }
 
   /* Cards less padding */
-  .card { padding: 14px; border-radius: 16px; }
+  .card { padding: 16px; border-radius: 16px; }
+
+  /* Entity cards: one per row, full width */
+  .entity-grid { grid-template-columns: 1fr; gap: 12px; }
+  .entity-card-actions button { padding: 6px 12px; }
 
   /* Modal: full-width bottom sheet feel */
   .modal-overlay { align-items: flex-end; padding: 0; }

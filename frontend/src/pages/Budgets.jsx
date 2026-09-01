@@ -20,9 +20,14 @@ export default function Budgets() {
   const [cats, setCats] = useState([])
   const [month, setMonth] = useState(() => new Date().toISOString().slice(0, 7))
   const [modal, setModal] = useState(false)
+  const [editingId, setEditingId] = useState(null)
   const [form, setForm] = useState({ category: '', limit: '' })
   const [error, setError] = useState('')
   const [saving, setSaving] = useState(false)
+
+  const openAdd = () => { setEditingId(null); setForm({ category: '', limit: '' }); setError(''); setModal(true) }
+  const openEdit = b => { setEditingId(b.id); setForm({ category: b.category, limit: String(b.limit) }); setError(''); setModal(true) }
+  const closeModal = () => { setModal(false); setEditingId(null) }
 
   const load = () => api.get(`/budgets?month=${month}`).then(r => setBudgets(r.data)).catch(() => {})
   useEffect(() => { load() }, [month])
@@ -35,8 +40,10 @@ export default function Budgets() {
     if (saving) return
     setError(''); setSaving(true)
     try {
-      await api.post('/budgets', { category: form.category, month, limit: Number(form.limit) })
-      setModal(false); setForm({ category: '', limit: '' }); load()
+      const payload = { category: form.category, month, limit: Number(form.limit) }
+      if (editingId) await api.patch(`/budgets/${editingId}`, payload)
+      else await api.post('/budgets', payload)
+      closeModal(); setForm({ category: '', limit: '' }); load()
     } catch (err) {
       setError(err.response?.data?.error?.message || 'Could not save budget')
     } finally { setSaving(false) }
@@ -62,27 +69,28 @@ export default function Budgets() {
         <div className="topbar-controls">
           <input type="month" value={month} onChange={e => setMonth(e.target.value)}
             className="inp" style={{ width: 'auto', minHeight: 40, padding: '8px 14px', fontSize: 14 }} />
-          <button className="btn-violet" onClick={() => { setError(''); setModal(true) }} style={{ minHeight: 40, padding: '8px 20px', fontSize: 14, flexShrink: 0 }}>+ Add budget</button>
+          <button className="btn-violet" onClick={openAdd} style={{ minHeight: 40, padding: '8px 20px', fontSize: 14, flexShrink: 0 }}>+ Add budget</button>
         </div>
       </div>
 
       {budgets.length === 0 ? (
         <p style={{ color: '#6f6880' }}>No budgets for this month. Add one to start nudging yourself.</p>
       ) : (
-        <div style={{ display: 'grid', gap: 14, gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))' }}>
+        <div className="entity-grid">
           {budgets.map((b, i) => {
             const pct = b.limit > 0 ? Math.min((b.spent / b.limit) * 100, 100) : 0
             const color = b.overLimit ? '#ff6a4d' : COLORS[i % COLORS.length]
             return (
               <div key={b.id} className="card" style={{ border: b.overLimit ? '1px solid #ffd9cf' : '1px solid #f0e5d7' }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-                  <span style={{ fontWeight: 700, fontFamily: '"Bricolage Grotesque"', fontSize: 16 }}>{b.category}</span>
-                  <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <div className="entity-card-head">
+                  <div className="title-block" style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                    <span style={{ fontWeight: 700, fontFamily: '"Bricolage Grotesque"', fontSize: 16 }}>{b.category}</span>
                     {b.overLimit && <span style={{ fontSize: 12, fontWeight: 700, color: '#9c3a22', background: '#ffe3dc', borderRadius: 999, padding: '3px 10px' }}>Over limit</span>}
-                    <button onClick={() => del(b.id)} style={{ background: 'none', border: 0, cursor: 'pointer', color: '#b0a8bd', fontSize: 13, fontWeight: 700, padding: '4px 8px', borderRadius: 999 }}
-                      onMouseEnter={e => { e.currentTarget.style.color = '#ff6a4d'; e.currentTarget.style.background = '#ffe9e3' }}
-                      onMouseLeave={e => { e.currentTarget.style.color = '#b0a8bd'; e.currentTarget.style.background = 'none' }}>Delete</button>
-                  </span>
+                  </div>
+                  <div className="entity-card-actions">
+                    <button className="act-edit" onClick={() => openEdit(b)}>Edit</button>
+                    <button className="act-del" onClick={() => del(b.id)}>Delete</button>
+                  </div>
                 </div>
                 <div style={{ height: 8, background: '#f0e5d7', borderRadius: 999, overflow: 'hidden', marginBottom: 10 }}>
                   <div style={{ height: 8, background: color, borderRadius: 999, width: `${pct}%`, transition: 'width 0.3s' }} />
@@ -101,7 +109,7 @@ export default function Budgets() {
       )}
 
       {modal && (
-        <Modal title="Set a budget cap" onClose={() => setModal(false)}>
+        <Modal title={editingId ? 'Edit budget cap' : 'Set a budget cap'} onClose={closeModal}>
           <form onSubmit={submit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             <div>
               <label className="lbl">Category</label>
@@ -120,7 +128,7 @@ export default function Budgets() {
             </div>
             {error && <div style={{ background: '#ffe3dc', color: '#9c2f1a', borderRadius: 14, padding: '10px 14px', fontSize: 13.5, fontWeight: 700 }}>{error}</div>}
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10 }}>
-              <button type="button" className="btn-ghost" onClick={() => setModal(false)}>Never mind</button>
+              <button type="button" className="btn-ghost" onClick={closeModal}>Never mind</button>
               <button type="submit" className="btn-violet" disabled={saving}>{saving ? 'Saving…' : 'Save'}</button>
             </div>
           </form>

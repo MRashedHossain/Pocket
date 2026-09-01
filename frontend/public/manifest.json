@@ -2,23 +2,30 @@
   "name": "Pocket",
   "short_name": "Pocket",
   "description": "Personal finance tracker",
-  "start_url": "/",
+  "start_url": "/dashboard",
+  "scope": "/",
   "display": "standalone",
   "background_color": "#fff7ef",
   "theme_color": "#7b5cf0",
   "orientation": "portrait",
   "icons": [
     {
-      "src": "/icon.png",
-      "sizes": "512x560",
+      "src": "/pwa-192.png",
+      "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/icon.png",
-      "sizes": "any",
+      "src": "/pwa-512.png",
+      "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
+    },
+    {
+      "src": "/pwa-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ]
 }

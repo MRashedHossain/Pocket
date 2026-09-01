@@ -24,9 +24,19 @@ export default function Income() {
   const [catFilter, setCatFilter] = useState('')
   const period = usePeriod()
   const [modal, setModal] = useState(false)
+  const [editingId, setEditingId] = useState(null)
   const [form, setForm] = useState({ date: new Date().toISOString().slice(0, 10), category: '', amount: '', note: '' })
   const [error, setError] = useState('')
   const [saving, setSaving] = useState(false)
+
+  const blankForm = () => ({ date: new Date().toISOString().slice(0, 10), category: '', amount: '', note: '' })
+  const openAdd = () => { setEditingId(null); setForm(blankForm()); setError(''); setModal(true) }
+  const openEdit = i => {
+    setEditingId(i.id)
+    setForm({ date: i.date, category: i.category, amount: String(i.amount), note: i.note || '' })
+    setError(''); setModal(true)
+  }
+  const closeModal = () => { setModal(false); setEditingId(null) }
 
   const load = () => api.get(`/income?${period.query}`).then(r => setItems(r.data)).catch(() => {})
   useEffect(() => { load() }, [period.query])
@@ -39,9 +49,11 @@ export default function Income() {
     if (saving) return
     setError(''); setSaving(true)
     try {
-      await api.post('/income', { ...form, amount: Number(form.amount) })
-      setModal(false)
-      setForm({ date: new Date().toISOString().slice(0, 10), category: '', amount: '', note: '' })
+      const payload = { ...form, amount: Number(form.amount) }
+      if (editingId) await api.patch(`/income/${editingId}`, payload)
+      else await api.post('/income', payload)
+      closeModal()
+      setForm(blankForm())
       load()
     } catch (err) { setError(err.response?.data?.error?.message || 'Failed to save') } finally { setSaving(false) }
   }
@@ -71,7 +83,7 @@ export default function Income() {
             </select>
           )}
           <PeriodPicker period={period} />
-          <button className="btn-violet" onClick={() => setModal(true)} style={{ minHeight: 40, padding: '8px 20px', fontSize: 14, flexShrink: 0 }}>+ Add income</button>
+          <button className="btn-violet" onClick={openAdd} style={{ minHeight: 40, padding: '8px 20px', fontSize: 14, flexShrink: 0 }}>+ Add income</button>
         </div>
       </div>
 
@@ -97,11 +109,18 @@ export default function Income() {
                 <td data-label="Note" style={{ color: '#6f6880' }}>{i.note || null}</td>
                 <td data-label="Amount" style={{ fontWeight: 700, color: '#0b6b52' }} className="tnum">৳{i.amount.toLocaleString()}</td>
                 <td data-label="">
-                  <button onClick={() => del(i.id)} style={{ background: 'none', border: 0, cursor: 'pointer', color: '#b0a8bd', fontSize: 13, fontWeight: 700, padding: '5px 9px', borderRadius: 999 }}
-                    onMouseEnter={e => { e.currentTarget.style.color = '#ff6a4d'; e.currentTarget.style.background = '#ffe9e3' }}
-                    onMouseLeave={e => { e.currentTarget.style.color = '#b0a8bd'; e.currentTarget.style.background = 'none' }}>
-                    Delete
-                  </button>
+                  <span style={{ display: 'flex', gap: 4, justifyContent: 'flex-end' }}>
+                    <button onClick={() => openEdit(i)} style={{ background: 'none', border: 0, cursor: 'pointer', color: '#7b5cf0', fontSize: 13, fontWeight: 700, padding: '5px 9px', borderRadius: 999 }}
+                      onMouseEnter={e => { e.currentTarget.style.background = '#eae1ff' }}
+                      onMouseLeave={e => { e.currentTarget.style.background = 'none' }}>
+                      Edit
+                    </button>
+                    <button onClick={() => del(i.id)} style={{ background: 'none', border: 0, cursor: 'pointer', color: '#b0a8bd', fontSize: 13, fontWeight: 700, padding: '5px 9px', borderRadius: 999 }}
+                      onMouseEnter={e => { e.currentTarget.style.color = '#ff6a4d'; e.currentTarget.style.background = '#ffe9e3' }}
+                      onMouseLeave={e => { e.currentTarget.style.color = '#b0a8bd'; e.currentTarget.style.background = 'none' }}>
+                      Delete
+                    </button>
+                  </span>
                 </td>
               </tr>
             ))}
@@ -110,7 +129,7 @@ export default function Income() {
       </div>
 
       {modal && (
-        <Modal title="Log income" onClose={() => setModal(false)}>
+        <Modal title={editingId ? 'Edit income' : 'Log income'} onClose={closeModal}>
           <form onSubmit={submit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             <div className="form-row">
               <div>
@@ -141,8 +160,8 @@ export default function Income() {
             </div>
             {error && <div style={{ background: '#ffe3dc', color: '#9c2f1a', borderRadius: 14, padding: '10px 14px', fontSize: 13.5, fontWeight: 700 }}>{error}</div>}
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10 }}>
-              <button type="button" className="btn-ghost" onClick={() => setModal(false)}>Never mind</button>
-              <button type="submit" className="btn-violet" disabled={saving}>{saving ? 'Logging…' : 'Log it'}</button>
+              <button type="button" className="btn-ghost" onClick={closeModal}>Never mind</button>
+              <button type="submit" className="btn-violet" disabled={saving}>{saving ? 'Saving…' : editingId ? 'Save changes' : 'Log it'}</button>
             </div>
           </form>
         </Modal>

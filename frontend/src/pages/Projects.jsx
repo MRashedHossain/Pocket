@@ -21,6 +21,7 @@ function initials(name) {
 export default function Projects() {
   const [projects, setProjects] = useState([])
   const [modal, setModal] = useState(null)
+  const [editingId, setEditingId] = useState(null)
   const [form, setForm] = useState({ name: '', target: '', note: '' })
   const [addMemberProject, setAddMemberProject] = useState(null)
   const [memberEmail, setMemberEmail] = useState('')
@@ -36,15 +37,21 @@ export default function Projects() {
   const load = () => api.get('/projects').then(r => setProjects(r.data)).catch(() => {})
   useEffect(() => { load() }, [])
 
+  const openAdd = () => { setEditingId(null); setForm({ name: '', target: '', note: '' }); setError(''); setModal('new') }
+  const openEdit = p => { setEditingId(p.id); setForm({ name: p.name, target: String(p.target || ''), note: p.note || '' }); setError(''); setModal('new') }
+  const closeModal = () => { setModal(null); setEditingId(null); setForm({ name: '', target: '', note: '' }) }
+
   const submit = async e => {
     e.preventDefault()
     if (saving) return
     setError(''); setSaving(true)
     try {
-      await api.post('/projects', { ...form, target: Number(form.target) || 0 })
-      setModal(null); setForm({ name: '', target: '', note: '' }); load()
+      const payload = { ...form, target: Number(form.target) || 0 }
+      if (editingId) await api.patch(`/projects/${editingId}`, payload)
+      else await api.post('/projects', payload)
+      closeModal(); load()
     } catch (err) {
-      setError(err.response?.data?.error?.message || 'Could not create project')
+      setError(err.response?.data?.error?.message || (editingId ? 'Could not update project' : 'Could not create project'))
     } finally { setSaving(false) }
   }
 
@@ -124,27 +131,28 @@ export default function Projects() {
           <h1 style={{ fontSize: 26, fontWeight: 800 }}>Projects</h1>
           <p style={{ margin: '4px 0 0', color: '#6f6880', fontSize: 14 }}>{projects.length} pot{projects.length !== 1 ? 's' : ''}</p>
         </div>
-        <button className="btn-violet" onClick={() => { setError(''); setModal('new') }} style={{ minHeight: 40, padding: '8px 20px', fontSize: 14, flexShrink: 0 }}>+ New pot</button>
+        <button className="btn-violet" onClick={openAdd} style={{ minHeight: 40, padding: '8px 20px', fontSize: 14, flexShrink: 0 }}>+ New pot</button>
       </div>
 
       {projects.length === 0 ? (
         <p style={{ color: '#6f6880' }}>No shared pots yet. Create one for a trip, event, or group goal.</p>
       ) : (
-        <div style={{ display: 'grid', gap: 14, gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))' }}>
+        <div className="entity-grid">
           {projects.map((p, idx) => {
             const total = (p.contributions || []).reduce((s, c) => s + c.amount, 0)
             const pct = p.target > 0 ? Math.min(Math.round(total / p.target * 100), 100) : 0
             const color = COLORS[idx % COLORS.length]
             return (
               <div key={p.id} className="card">
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
-                  <div>
-                    <div style={{ fontWeight: 700, fontFamily: '"Bricolage Grotesque"', fontSize: 16 }}>{p.name}</div>
-                    {p.note && <div style={{ fontSize: 13, color: '#6f6880', marginTop: 2 }}>{p.note}</div>}
+                <div className="entity-card-head">
+                  <div className="title-block">
+                    <div style={{ fontWeight: 700, fontFamily: '"Bricolage Grotesque"', fontSize: 17, lineHeight: 1.25 }}>{p.name}</div>
+                    {p.note && <div style={{ fontSize: 13, color: '#6f6880', marginTop: 3 }}>{p.note}</div>}
                   </div>
-                  <button onClick={() => del(p.id)} style={{ background: 'none', border: 0, cursor: 'pointer', color: '#b0a8bd', fontSize: 13, fontWeight: 700, padding: '4px 8px', borderRadius: 999 }}
-                    onMouseEnter={e => { e.currentTarget.style.color = '#ff6a4d'; e.currentTarget.style.background = '#ffe9e3' }}
-                    onMouseLeave={e => { e.currentTarget.style.color = '#b0a8bd'; e.currentTarget.style.background = 'none' }}>Delete</button>
+                  <div className="entity-card-actions">
+                    <button className="act-edit" onClick={() => openEdit(p)}>Edit</button>
+                    <button className="act-del" onClick={() => del(p.id)}>Delete</button>
+                  </div>
                 </div>
                 {p.target > 0 && (
                   <>
@@ -182,7 +190,7 @@ export default function Projects() {
       )}
 
       {modal === 'new' && (
-        <Modal title="Open a new pot" onClose={() => setModal(null)}>
+        <Modal title={editingId ? 'Edit pot' : 'Open a new pot'} onClose={closeModal}>
           <form onSubmit={submit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             <div>
               <label className="lbl">Name</label>
@@ -198,8 +206,8 @@ export default function Projects() {
             </div>
             {error && <div style={{ background: '#ffe3dc', color: '#9c2f1a', borderRadius: 14, padding: '10px 14px', fontSize: 13.5, fontWeight: 700 }}>{error}</div>}
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10 }}>
-              <button type="button" className="btn-ghost" onClick={() => setModal(null)}>Never mind</button>
-              <button type="submit" className="btn-violet" disabled={saving}>{saving ? 'Creating…' : 'Create pot'}</button>
+              <button type="button" className="btn-ghost" onClick={closeModal}>Never mind</button>
+              <button type="submit" className="btn-violet" disabled={saving}>{saving ? 'Saving…' : editingId ? 'Save changes' : 'Create pot'}</button>
             </div>
           </form>
         </Modal>
