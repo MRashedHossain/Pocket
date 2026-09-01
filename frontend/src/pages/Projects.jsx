@@ -26,6 +26,10 @@ export default function Projects() {
   const [memberEmail, setMemberEmail] = useState('')
   const [memberError, setMemberError] = useState('')
   const [memberLoading, setMemberLoading] = useState(false)
+  const [contribProject, setContribProject] = useState(null)
+  const [contribForm, setContribForm] = useState({ member: '', amount: '', txn: '' })
+  const [contribError, setContribError] = useState('')
+  const [contribLoading, setContribLoading] = useState(false)
   const [error, setError] = useState('')
   const [saving, setSaving] = useState(false)
 
@@ -71,6 +75,32 @@ export default function Projects() {
       setMemberError(err.response?.data?.error?.message || 'User not found')
     } finally {
       setMemberLoading(false)
+    }
+  }
+
+  const openContribute = (project) => {
+    setContribProject(project)
+    setContribForm({ member: project.members?.[0] || '', amount: '', txn: '' })
+    setContribError('')
+  }
+
+  const submitContribute = async e => {
+    e.preventDefault()
+    if (contribLoading) return
+    setContribError('')
+    setContribLoading(true)
+    try {
+      await api.post(`/projects/${contribProject.id}/contributions`, {
+        member: contribForm.member,
+        amount: Number(contribForm.amount) || 0,
+        txn: contribForm.txn,
+      })
+      setContribProject(null)
+      load()
+    } catch (err) {
+      setContribError(err.response?.data?.error?.message || 'Could not add money')
+    } finally {
+      setContribLoading(false)
     }
   }
 
@@ -127,6 +157,11 @@ export default function Projects() {
                     </div>
                   </>
                 )}
+                {!(p.target > 0) && (
+                  <div style={{ fontSize: 13, color: '#6f6880', marginBottom: 12 }}>
+                    <span className="tnum" style={{ fontWeight: 700, color: '#241f2e' }}>৳{total.toLocaleString()}</span> raised
+                  </div>
+                )}
                 <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
                   {(p.members || []).map((m) => (
                     <span key={m} style={{ background: '#f0e5d7', color: '#241f2e', borderRadius: 999, padding: '4px 10px', fontSize: 12.5, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -139,6 +174,7 @@ export default function Projects() {
                   ))}
                   <button onClick={() => openAddMember(p)} title="Add member" style={{ background: '#eae1ff', color: '#7b5cf0', border: 0, borderRadius: 999, padding: '4px 10px', fontSize: 12.5, fontWeight: 700, cursor: 'pointer' }}>+ Add</button>
                 </div>
+                <button className="btn-violet" onClick={() => openContribute(p)} style={{ marginTop: 12, width: '100%', minHeight: 38, fontSize: 13.5 }}>+ Add money</button>
               </div>
             )
           })}
@@ -164,6 +200,37 @@ export default function Projects() {
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10 }}>
               <button type="button" className="btn-ghost" onClick={() => setModal(null)}>Never mind</button>
               <button type="submit" className="btn-violet" disabled={saving}>{saving ? 'Creating…' : 'Create pot'}</button>
+            </div>
+          </form>
+        </Modal>
+      )}
+
+      {contribProject && (
+        <Modal title={`Add money to ${contribProject.name}`} onClose={() => setContribProject(null)}>
+          <form onSubmit={submitContribute} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            <div>
+              <label className="lbl">Member</label>
+              <select className="inp" required value={contribForm.member}
+                onChange={e => setContribForm(f => ({ ...f, member: e.target.value }))}>
+                {(contribProject.members || []).map(m => <option key={m} value={m}>{m}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="lbl">Amount (৳)</label>
+              <input className="inp tnum" type="number" min="1" required placeholder="500"
+                value={contribForm.amount} onChange={e => setContribForm(f => ({ ...f, amount: e.target.value }))} />
+            </div>
+            <div>
+              <label className="lbl">Reference (bKash / bank txn)</label>
+              <input className="inp" type="text" required placeholder="TXN123ABC"
+                value={contribForm.txn} onChange={e => setContribForm(f => ({ ...f, txn: e.target.value }))} />
+            </div>
+            {contribError && (
+              <div style={{ background: '#ffe3dc', color: '#9c2f1a', borderRadius: 14, padding: '10px 14px', fontSize: 13.5, fontWeight: 700 }}>{contribError}</div>
+            )}
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10 }}>
+              <button type="button" className="btn-ghost" onClick={() => setContribProject(null)}>Cancel</button>
+              <button type="submit" className="btn-violet" disabled={contribLoading}>{contribLoading ? 'Adding…' : 'Add money'}</button>
             </div>
           </form>
         </Modal>
