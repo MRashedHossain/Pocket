@@ -21,23 +21,37 @@ function initials(name) {
 export default function Projects() {
   const [projects, setProjects] = useState([])
   const [modal, setModal] = useState(null)
+  const [editingId, setEditingId] = useState(null)
   const [form, setForm] = useState({ name: '', target: '', note: '' })
   const [addMemberProject, setAddMemberProject] = useState(null)
   const [memberEmail, setMemberEmail] = useState('')
   const [memberError, setMemberError] = useState('')
   const [memberLoading, setMemberLoading] = useState(false)
+  const [contribProject, setContribProject] = useState(null)
+  const [contribForm, setContribForm] = useState({ member: '', amount: '', txn: '' })
+  const [contribError, setContribError] = useState('')
+  const [contribLoading, setContribLoading] = useState(false)
+  const [error, setError] = useState('')
   const [saving, setSaving] = useState(false)
 
   const load = () => api.get('/projects').then(r => setProjects(r.data)).catch(() => {})
   useEffect(() => { load() }, [])
 
+  const openAdd = () => { setEditingId(null); setForm({ name: '', target: '', note: '' }); setError(''); setModal('new') }
+  const openEdit = p => { setEditingId(p.id); setForm({ name: p.name, target: String(p.target || ''), note: p.note || '' }); setError(''); setModal('new') }
+  const closeModal = () => { setModal(null); setEditingId(null); setForm({ name: '', target: '', note: '' }) }
+
   const submit = async e => {
     e.preventDefault()
     if (saving) return
-    setSaving(true)
+    setError(''); setSaving(true)
     try {
-      await api.post('/projects', { ...form, target: Number(form.target) || 0 })
-      setModal(null); setForm({ name: '', target: '', note: '' }); load()
+      const payload = { ...form, target: Number(form.target) || 0 }
+      if (editingId) await api.patch(`/projects/${editingId}`, payload)
+      else await api.post('/projects', payload)
+      closeModal(); load()
+    } catch (err) {
+      setError(err.response?.data?.error?.message || (editingId ? 'Could not update project' : 'Could not create project'))
     } finally { setSaving(false) }
   }
 
@@ -71,6 +85,32 @@ export default function Projects() {
     }
   }
 
+  const openContribute = (project) => {
+    setContribProject(project)
+    setContribForm({ member: project.members?.[0] || '', amount: '', txn: '' })
+    setContribError('')
+  }
+
+  const submitContribute = async e => {
+    e.preventDefault()
+    if (contribLoading) return
+    setContribError('')
+    setContribLoading(true)
+    try {
+      await api.post(`/projects/${contribProject.id}/contributions`, {
+        member: contribForm.member,
+        amount: Number(contribForm.amount) || 0,
+        txn: contribForm.txn,
+      })
+      setContribProject(null)
+      load()
+    } catch (err) {
+      setContribError(err.response?.data?.error?.message || 'Could not add money')
+    } finally {
+      setContribLoading(false)
+    }
+  }
+
   const removeMember = async (projectId, member) => {
     const project = projects.find(p => p.id === projectId)
     const members = await api.get(`/projects/${projectId}/members`)
@@ -91,27 +131,28 @@ export default function Projects() {
           <h1 style={{ fontSize: 26, fontWeight: 800 }}>Projects</h1>
           <p style={{ margin: '4px 0 0', color: '#6f6880', fontSize: 14 }}>{projects.length} pot{projects.length !== 1 ? 's' : ''}</p>
         </div>
-        <button className="btn-violet" onClick={() => setModal('new')} style={{ minHeight: 40, padding: '8px 20px', fontSize: 14, flexShrink: 0 }}>+ New pot</button>
+        <button className="btn-violet" onClick={openAdd} style={{ minHeight: 40, padding: '8px 20px', fontSize: 14, flexShrink: 0 }}>+ New pot</button>
       </div>
 
       {projects.length === 0 ? (
         <p style={{ color: '#6f6880' }}>No shared pots yet. Create one for a trip, event, or group goal.</p>
       ) : (
-        <div style={{ display: 'grid', gap: 14, gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))' }}>
+        <div className="entity-grid">
           {projects.map((p, idx) => {
             const total = (p.contributions || []).reduce((s, c) => s + c.amount, 0)
             const pct = p.target > 0 ? Math.min(Math.round(total / p.target * 100), 100) : 0
             const color = COLORS[idx % COLORS.length]
             return (
               <div key={p.id} className="card">
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
-                  <div>
-                    <div style={{ fontWeight: 700, fontFamily: '"Bricolage Grotesque"', fontSize: 16 }}>{p.name}</div>
-                    {p.note && <div style={{ fontSize: 13, color: '#6f6880', marginTop: 2 }}>{p.note}</div>}
+                <div className="entity-card-head">
+                  <div className="title-block">
+                    <div style={{ fontWeight: 700, fontFamily: '"Bricolage Grotesque"', fontSize: 17, lineHeight: 1.25 }}>{p.name}</div>
+                    {p.note && <div style={{ fontSize: 13, color: '#6f6880', marginTop: 3 }}>{p.note}</div>}
                   </div>
-                  <button onClick={() => del(p.id)} style={{ background: 'none', border: 0, cursor: 'pointer', color: '#b0a8bd', fontSize: 13, fontWeight: 700, padding: '4px 8px', borderRadius: 999 }}
-                    onMouseEnter={e => { e.currentTarget.style.color = '#ff6a4d'; e.currentTarget.style.background = '#ffe9e3' }}
-                    onMouseLeave={e => { e.currentTarget.style.color = '#b0a8bd'; e.currentTarget.style.background = 'none' }}>Delete</button>
+                  <div className="entity-card-actions">
+                    <button className="act-edit" onClick={() => openEdit(p)}>Edit</button>
+                    <button className="act-del" onClick={() => del(p.id)}>Delete</button>
+                  </div>
                 </div>
                 {p.target > 0 && (
                   <>
@@ -123,6 +164,11 @@ export default function Projects() {
                       <span className="tnum" style={{ fontWeight: 700, color: '#241f2e' }}>৳{p.target.toLocaleString()} · {pct}%</span>
                     </div>
                   </>
+                )}
+                {!(p.target > 0) && (
+                  <div style={{ fontSize: 13, color: '#6f6880', marginBottom: 12 }}>
+                    <span className="tnum" style={{ fontWeight: 700, color: '#241f2e' }}>৳{total.toLocaleString()}</span> raised
+                  </div>
                 )}
                 <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
                   {(p.members || []).map((m) => (
@@ -136,6 +182,7 @@ export default function Projects() {
                   ))}
                   <button onClick={() => openAddMember(p)} title="Add member" style={{ background: '#eae1ff', color: '#7b5cf0', border: 0, borderRadius: 999, padding: '4px 10px', fontSize: 12.5, fontWeight: 700, cursor: 'pointer' }}>+ Add</button>
                 </div>
+                <button className="btn-violet" onClick={() => openContribute(p)} style={{ marginTop: 12, width: '100%', minHeight: 38, fontSize: 13.5 }}>+ Add money</button>
               </div>
             )
           })}
@@ -143,7 +190,7 @@ export default function Projects() {
       )}
 
       {modal === 'new' && (
-        <Modal title="Open a new pot" onClose={() => setModal(null)}>
+        <Modal title={editingId ? 'Edit pot' : 'Open a new pot'} onClose={closeModal}>
           <form onSubmit={submit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             <div>
               <label className="lbl">Name</label>
@@ -157,9 +204,41 @@ export default function Projects() {
               <label className="lbl">Note</label>
               <input className="inp" type="text" placeholder="Four families, three nights" value={form.note} onChange={e => setForm(f => ({ ...f, note: e.target.value }))} />
             </div>
+            {error && <div style={{ background: '#ffe3dc', color: '#9c2f1a', borderRadius: 14, padding: '10px 14px', fontSize: 13.5, fontWeight: 700 }}>{error}</div>}
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10 }}>
-              <button type="button" className="btn-ghost" onClick={() => setModal(null)}>Never mind</button>
-              <button type="submit" className="btn-violet" disabled={saving}>{saving ? 'Creating…' : 'Create pot'}</button>
+              <button type="button" className="btn-ghost" onClick={closeModal}>Never mind</button>
+              <button type="submit" className="btn-violet" disabled={saving}>{saving ? 'Saving…' : editingId ? 'Save changes' : 'Create pot'}</button>
+            </div>
+          </form>
+        </Modal>
+      )}
+
+      {contribProject && (
+        <Modal title={`Add money to ${contribProject.name}`} onClose={() => setContribProject(null)}>
+          <form onSubmit={submitContribute} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            <div>
+              <label className="lbl">Member</label>
+              <select className="inp" required value={contribForm.member}
+                onChange={e => setContribForm(f => ({ ...f, member: e.target.value }))}>
+                {(contribProject.members || []).map(m => <option key={m} value={m}>{m}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="lbl">Amount (৳)</label>
+              <input className="inp tnum" type="number" min="1" required placeholder="500"
+                value={contribForm.amount} onChange={e => setContribForm(f => ({ ...f, amount: e.target.value }))} />
+            </div>
+            <div>
+              <label className="lbl">Reference (bKash / bank txn)</label>
+              <input className="inp" type="text" required placeholder="TXN123ABC"
+                value={contribForm.txn} onChange={e => setContribForm(f => ({ ...f, txn: e.target.value }))} />
+            </div>
+            {contribError && (
+              <div style={{ background: '#ffe3dc', color: '#9c2f1a', borderRadius: 14, padding: '10px 14px', fontSize: 13.5, fontWeight: 700 }}>{contribError}</div>
+            )}
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10 }}>
+              <button type="button" className="btn-ghost" onClick={() => setContribProject(null)}>Cancel</button>
+              <button type="submit" className="btn-violet" disabled={contribLoading}>{contribLoading ? 'Adding…' : 'Add money'}</button>
             </div>
           </form>
         </Modal>

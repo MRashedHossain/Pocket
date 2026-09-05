@@ -1,0 +1,8 @@
+**/node_modules
+**/dist
+**/.env
+**/.git
+frontend/web
+backend/web
+backend/server
+*.md

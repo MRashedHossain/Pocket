@@ -3,6 +3,8 @@ package main
 import (
 	"log"
 	"net/http"
+	"path/filepath"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
@@ -25,10 +27,6 @@ func main() {
 
 	r := gin.Default()
 	r.Use(cors())
-
-	r.GET("/", func(c *gin.Context) {
-		c.JSON(http.StatusOK, gin.H{"message": "Pocket API — see /api/v1"})
-	})
 
 	v1 := r.Group("/api/v1")
 	v1.Use(middleware.CacheBust())
@@ -165,8 +163,40 @@ func main() {
 	set.PATCH("/categories/:id", handlers.RenameSettingsCategory(database))
 	set.DELETE("/categories/:id", handlers.DeleteSettingsCategory(database))
 
-	log.Printf("Pocket API running on :%s", cfg.Port)
+	serveSPA(r, cfg.StaticDir)
+
+	log.Printf("Pocket running on :%s (static dir %q)", cfg.Port, cfg.StaticDir)
 	r.Run(":" + cfg.Port)
+}
+
+// serveSPA serves the built frontend from dir: real files when they exist,
+// index.html as the fallback for client-side routes. API paths still 404 as JSON.
+func serveSPA(r *gin.Engine, dir string) {
+	root := http.Dir(dir)
+	if f, err := root.Open("index.html"); err != nil {
+		log.Printf("no frontend build at %q, serving API only", dir)
+		return
+	} else {
+		f.Close()
+	}
+
+	fileServer := http.FileServer(root)
+	index := filepath.Join(dir, "index.html")
+
+	r.NoRoute(func(c *gin.Context) {
+		p := c.Request.URL.Path
+		if strings.HasPrefix(p, "/api/") {
+			c.JSON(http.StatusNotFound, gin.H{"error": "not found"})
+			return
+		}
+		// http.Dir.Open rejects path traversal; missing file -> SPA fallback.
+		if f, err := root.Open(p); err == nil {
+			f.Close()
+			fileServer.ServeHTTP(c.Writer, c.Request)
+			return
+		}
+		c.File(index)
+	})
 }
 
 func cors() gin.HandlerFunc {

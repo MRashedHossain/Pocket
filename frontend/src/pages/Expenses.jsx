@@ -22,11 +22,22 @@ function Modal({ title, onClose, children }) {
 export default function Expenses() {
   const [items, setItems] = useState([])
   const [cats, setCats] = useState([])
+  const [catFilter, setCatFilter] = useState('')
   const period = usePeriod()
   const [modal, setModal] = useState(false)
+  const [editingId, setEditingId] = useState(null)
   const [form, setForm] = useState({ date: new Date().toISOString().slice(0, 10), category: '', amount: '', note: '', method: 'Cash' })
   const [error, setError] = useState('')
   const [saving, setSaving] = useState(false)
+
+  const blankForm = () => ({ date: new Date().toISOString().slice(0, 10), category: '', amount: '', note: '', method: 'Cash' })
+  const openAdd = () => { setEditingId(null); setForm(blankForm()); setError(''); setModal(true) }
+  const openEdit = e => {
+    setEditingId(e.id)
+    setForm({ date: e.date, category: e.category, amount: String(e.amount), note: e.note === 'Unspecified' ? '' : (e.note || ''), method: e.method || 'Cash' })
+    setError(''); setModal(true)
+  }
+  const closeModal = () => { setModal(false); setEditingId(null) }
 
   const load = () => api.get(`/expenses?${period.query}`).then(r => setItems(r.data)).catch(() => {})
   useEffect(() => { load() }, [period.query])
@@ -39,9 +50,11 @@ export default function Expenses() {
     if (saving) return
     setError(''); setSaving(true)
     try {
-      await api.post('/expenses', { ...form, amount: Number(form.amount) })
-      setModal(false)
-      setForm({ date: new Date().toISOString().slice(0, 10), category: '', amount: '', note: '', method: 'Cash' })
+      const payload = { ...form, amount: Number(form.amount) }
+      if (editingId) await api.patch(`/expenses/${editingId}`, payload)
+      else await api.post('/expenses', payload)
+      closeModal()
+      setForm(blankForm())
       load()
     } catch (err) { setError(err.response?.data?.error?.message || 'Failed to save') } finally { setSaving(false) }
   }
@@ -53,16 +66,25 @@ export default function Expenses() {
 
   const colorFor = cat => COLORS[cats.findIndex(c => c.name === cat) % COLORS.length] || COLORS[0]
 
+  const visible = catFilter ? items.filter(e => e.category === catFilter) : items
+
   return (
     <>
       <div className="page-topbar" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
         <div style={{ flex: 1 }}>
           <h1 style={{ fontSize: 26, fontWeight: 800 }}>Expenses</h1>
-          <p style={{ margin: '4px 0 0', color: '#6f6880', fontSize: 14 }}>{items.length} expense{items.length !== 1 ? 's' : ''} · {period.label}</p>
+          <p style={{ margin: '4px 0 0', color: '#6f6880', fontSize: 14 }}>{visible.length} expense{visible.length !== 1 ? 's' : ''} · {period.label}{catFilter ? ` · ${catFilter}` : ''}</p>
         </div>
         <div className="topbar-controls">
+          {cats.length > 0 && (
+            <select className="inp" value={catFilter} onChange={e => setCatFilter(e.target.value)}
+              style={{ width: 'auto', minHeight: 40, padding: '8px 14px', fontSize: 14 }}>
+              <option value="">All categories</option>
+              {cats.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
+            </select>
+          )}
           <PeriodPicker period={period} />
-          <button className="btn-violet" onClick={() => setModal(true)} style={{ minHeight: 40, padding: '8px 20px', fontSize: 14, flexShrink: 0 }}>+ Add expense</button>
+          <button className="btn-violet" onClick={openAdd} style={{ minHeight: 40, padding: '8px 20px', fontSize: 14, flexShrink: 0 }}>+ Add expense</button>
         </div>
       </div>
 
@@ -74,9 +96,9 @@ export default function Expenses() {
             </tr>
           </thead>
           <tbody>
-            {items.length === 0 ? (
-              <tr><td colSpan={6} style={{ textAlign: 'center', color: '#6f6880', padding: '32px 16px' }}>No expenses {period.noun}</td></tr>
-            ) : items.map(e => (
+            {visible.length === 0 ? (
+              <tr><td colSpan={6} style={{ textAlign: 'center', color: '#6f6880', padding: '32px 16px' }}>No expenses {catFilter ? `in ${catFilter} ` : ''}{period.noun}</td></tr>
+            ) : visible.map(e => (
               <tr key={e.id}>
                 <td data-label="Date" style={{ color: '#6f6880', fontSize: 14 }}>{fmtDate(e.date)}</td>
                 <td data-label="Category">
@@ -89,11 +111,18 @@ export default function Expenses() {
                 <td data-label="Method" style={{ color: '#6f6880' }}>{e.method}</td>
                 <td data-label="Amount" style={{ fontWeight: 700 }} className="tnum">৳{e.amount.toLocaleString()}</td>
                 <td data-label="">
-                  <button onClick={() => del(e.id)} style={{ background: 'none', border: 0, cursor: 'pointer', color: '#b0a8bd', fontSize: 13, fontWeight: 700, padding: '5px 9px', borderRadius: 999 }}
-                    onMouseEnter={e => { e.currentTarget.style.color = '#ff6a4d'; e.currentTarget.style.background = '#ffe9e3' }}
-                    onMouseLeave={e => { e.currentTarget.style.color = '#b0a8bd'; e.currentTarget.style.background = 'none' }}>
-                    Delete
-                  </button>
+                  <span style={{ display: 'flex', gap: 4, justifyContent: 'flex-end' }}>
+                    <button onClick={() => openEdit(e)} style={{ background: 'none', border: 0, cursor: 'pointer', color: '#7b5cf0', fontSize: 13, fontWeight: 700, padding: '5px 9px', borderRadius: 999 }}
+                      onMouseEnter={ev => { ev.currentTarget.style.background = '#eae1ff' }}
+                      onMouseLeave={ev => { ev.currentTarget.style.background = 'none' }}>
+                      Edit
+                    </button>
+                    <button onClick={() => del(e.id)} style={{ background: 'none', border: 0, cursor: 'pointer', color: '#b0a8bd', fontSize: 13, fontWeight: 700, padding: '5px 9px', borderRadius: 999 }}
+                      onMouseEnter={ev => { ev.currentTarget.style.color = '#ff6a4d'; ev.currentTarget.style.background = '#ffe9e3' }}
+                      onMouseLeave={ev => { ev.currentTarget.style.color = '#b0a8bd'; ev.currentTarget.style.background = 'none' }}>
+                      Delete
+                    </button>
+                  </span>
                 </td>
               </tr>
             ))}
@@ -102,7 +131,7 @@ export default function Expenses() {
       </div>
 
       {modal && (
-        <Modal title="Log an expense" onClose={() => setModal(false)}>
+        <Modal title={editingId ? 'Edit expense' : 'Log an expense'} onClose={closeModal}>
           <form onSubmit={submit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             <div className="form-row">
               <div>
@@ -139,8 +168,8 @@ export default function Expenses() {
             </div>
             {error && <div style={{ background: '#ffe3dc', color: '#9c2f1a', borderRadius: 14, padding: '10px 14px', fontSize: 13.5, fontWeight: 700 }}>{error}</div>}
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10 }}>
-              <button type="button" className="btn-ghost" onClick={() => setModal(false)}>Never mind</button>
-              <button type="submit" className="btn-violet" disabled={saving}>{saving ? 'Logging…' : 'Log it'}</button>
+              <button type="button" className="btn-ghost" onClick={closeModal}>Never mind</button>
+              <button type="submit" className="btn-violet" disabled={saving}>{saving ? 'Saving…' : editingId ? 'Save changes' : 'Log it'}</button>
             </div>
           </form>
         </Modal>

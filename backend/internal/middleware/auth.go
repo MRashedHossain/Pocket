@@ -5,9 +5,9 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/MRashedHossain/pocket/internal/models"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/MRashedHossain/pocket/internal/models"
 	"gorm.io/gorm"
 )
 
@@ -59,14 +59,27 @@ func Auth(secret string, db *gorm.DB) gin.HandlerFunc {
 			return
 		}
 
-		userID, _ := claims["sub"].(string)
-		var user models.User
-		if err := db.First(&user, "id = ?", userID).Error; err != nil {
+		userID, found := claims["sub"].(string)
+		if !found {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": gin.H{"code": "unauthorized", "message": "User not found"}})
+			return
+		}
+		userName, found := claims["name"].(string)
+		if !found {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": gin.H{"code": "unauthorized", "message": "User not found"}})
+			return
+		}
+		userEmail, found := claims["email"].(string)
+		if !found {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": gin.H{"code": "unauthorized", "message": "User not found"}})
 			return
 		}
 
-		c.Set("user", &user)
+		c.Set("user", &models.User{
+			ID:    userID,
+			Name:  userName,
+			Email: userEmail,
+		})
 		c.Set("token", raw)
 		c.Next()
 	}

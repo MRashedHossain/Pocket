@@ -4,8 +4,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/gin-gonic/gin"
 	"github.com/MRashedHossain/pocket/internal/models"
+	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
 
@@ -105,8 +105,8 @@ func DebtSummary(db *gorm.DB) gin.HandlerFunc {
 		c.JSON(http.StatusOK, gin.H{
 			"totalLent": totalLent, "totalBorrowed": totalBorrowed,
 			"totalLentPaid": totalLentPaid, "totalBorrowedPaid": totalBorrowedPaid,
-			"netOwed":      (totalLent - totalLentPaid) - (totalBorrowed - totalBorrowedPaid),
-			"openCount":    open, "settledCount": settled,
+			"netOwed":   (totalLent - totalLentPaid) - (totalBorrowed - totalBorrowedPaid),
+			"openCount": open, "settledCount": settled,
 		})
 	}
 }
@@ -211,15 +211,35 @@ func UpdateDebt(db *gorm.DB) gin.HandlerFunc {
 			return
 		}
 		var body struct {
+			Kind     *string `json:"kind"`
 			Person   *string `json:"person"`
+			Amount   *int    `json:"amount"`
 			Due      *string `json:"due"`
 			Note     *string `json:"note"`
 			Category *string `json:"category"`
 			Settled  *bool   `json:"settled"`
 		}
 		c.ShouldBindJSON(&body)
+		if body.Kind != nil {
+			if *body.Kind != "lent" && *body.Kind != "borrowed" {
+				validationErr(c, "Kind must be lent or borrowed")
+				return
+			}
+			d.Kind = *body.Kind
+		}
 		if body.Person != nil {
 			d.Person = *body.Person
+		}
+		if body.Amount != nil {
+			if *body.Amount <= 0 {
+				validationErr(c, "Amount must be greater than zero")
+				return
+			}
+			if paid := getPaidAmount(db, d.ID); *body.Amount < paid {
+				validationErr(c, "Amount cannot be less than what's already been paid")
+				return
+			}
+			d.Amount = *body.Amount
 		}
 		if body.Due != nil {
 			due, err := parseDate(*body.Due)

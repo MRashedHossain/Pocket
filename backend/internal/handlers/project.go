@@ -77,8 +77,16 @@ func CreateProject(db *gorm.DB) gin.HandlerFunc {
 		}
 		u := currentUser(c)
 		p := models.Project{UserID: u.ID, Name: body.Name, Target: body.Target, Note: body.Note}
-		db.Create(&p)
-		db.Create(&models.ProjectMember{ProjectID: p.ID, Name: u.Name})
+		err := db.Transaction(func(tx *gorm.DB) error {
+			if err := tx.Create(&p).Error; err != nil {
+				return err
+			}
+			return tx.Create(&models.ProjectMember{ProjectID: p.ID, Name: u.Name}).Error
+		})
+		if err != nil {
+			errResp(c, http.StatusInternalServerError, "create_failed", "Could not create project")
+			return
+		}
 		p2, _ := loadProject(db, p.ID, u.ID)
 		c.JSON(http.StatusCreated, toProjectOut(*p2))
 	}

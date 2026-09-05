@@ -29,6 +29,7 @@ export default function Debts() {
   const [debts, setDebts] = useState([])
   const [debtCats, setDebtCats] = useState([])
   const [modal, setModal] = useState(null)
+  const [editingId, setEditingId] = useState(null)
   const [payDebt, setPayDebt] = useState(null)
   const [form, setForm] = useState({ kind: 'lent', person: '', amount: '', due: '', note: '', category: '' })
   const [payForm, setPayForm] = useState({ amount: '', note: '' })
@@ -42,13 +43,24 @@ export default function Debts() {
     api.get('/debt-categories').then(r => setDebtCats(r.data || [])).catch(() => {})
   }, [])
 
+  const blankForm = { kind: 'lent', person: '', amount: '', due: '', note: '', category: '' }
+  const openAdd = () => { setEditingId(null); setForm(blankForm); setError(''); setModal('add') }
+  const openEdit = d => {
+    setEditingId(d.id)
+    setForm({ kind: d.kind, person: d.person, amount: String(d.amount), due: d.due || '', note: d.note || '', category: d.category || '' })
+    setError(''); setModal('add')
+  }
+  const closeModal = () => { setModal(null); setEditingId(null); setForm(blankForm) }
+
   const submit = async e => {
     e.preventDefault()
     if (saving) return
     setError(''); setSaving(true)
     try {
-      await api.post('/debts', { ...form, amount: Number(form.amount), due: form.due || undefined, category: form.category })
-      setModal(null); setForm({ kind: 'lent', person: '', amount: '', due: '', note: '', category: '' }); load()
+      const payload = { ...form, amount: Number(form.amount), due: form.due || undefined, category: form.category }
+      if (editingId) await api.patch(`/debts/${editingId}`, payload)
+      else await api.post('/debts', payload)
+      closeModal(); load()
     } catch (err) { setError(err.response?.data?.error?.message || 'Failed to save') } finally { setSaving(false) }
   }
 
@@ -79,7 +91,7 @@ export default function Debts() {
           <h1 style={{ fontSize: 26, fontWeight: 800 }}>IOUs</h1>
           <p style={{ margin: '4px 0 0', color: '#6f6880', fontSize: 14 }}>{open.length} open · {settled.length} settled</p>
         </div>
-        <button className="btn-violet" onClick={() => setModal('add')} style={{ minHeight: 40, padding: '8px 20px', fontSize: 14 }}>+ Add IOU</button>
+        <button className="btn-violet" onClick={openAdd} style={{ minHeight: 40, padding: '8px 20px', fontSize: 14 }}>+ Add IOU</button>
       </div>
 
       {open.length > 0 && (
@@ -107,6 +119,9 @@ export default function Debts() {
                         <button onClick={() => setPayDebt(d)} style={{ background: 'none', border: 0, cursor: 'pointer', color: '#7b5cf0', fontSize: 13, fontWeight: 700, padding: '5px 9px', borderRadius: 999 }}
                           onMouseEnter={e => { e.currentTarget.style.background = '#eae1ff' }}
                           onMouseLeave={e => { e.currentTarget.style.background = 'none' }}>Pay</button>
+                        <button onClick={() => openEdit(d)} style={{ background: 'none', border: 0, cursor: 'pointer', color: '#7b5cf0', fontSize: 13, fontWeight: 700, padding: '5px 9px', borderRadius: 999 }}
+                          onMouseEnter={e => { e.currentTarget.style.background = '#eae1ff' }}
+                          onMouseLeave={e => { e.currentTarget.style.background = 'none' }}>Edit</button>
                         <button onClick={() => del(d.id)} style={{ background: 'none', border: 0, cursor: 'pointer', color: '#b0a8bd', fontSize: 13, fontWeight: 700, padding: '5px 9px', borderRadius: 999 }}
                           onMouseEnter={e => { e.currentTarget.style.color = '#ff6a4d'; e.currentTarget.style.background = '#ffe9e3' }}
                           onMouseLeave={e => { e.currentTarget.style.color = '#b0a8bd'; e.currentTarget.style.background = 'none' }}>Delete</button>
@@ -134,9 +149,14 @@ export default function Debts() {
                     <td data-label="Note" style={{ color: '#6f6880', fontSize: 14 }}>{d.note || null}</td>
                     <td data-label="Amount" className="tnum">৳{d.amount.toLocaleString()}</td>
                     <td data-label="">
-                      <button onClick={() => del(d.id)} style={{ background: 'none', border: 0, cursor: 'pointer', color: '#b0a8bd', fontSize: 13, fontWeight: 700, padding: '5px 9px', borderRadius: 999 }}
-                        onMouseEnter={e => { e.currentTarget.style.color = '#ff6a4d'; e.currentTarget.style.background = '#ffe9e3' }}
-                        onMouseLeave={e => { e.currentTarget.style.color = '#b0a8bd'; e.currentTarget.style.background = 'none' }}>Delete</button>
+                      <span style={{ display: 'flex', gap: 4, justifyContent: 'flex-end' }}>
+                        <button onClick={() => openEdit(d)} style={{ background: 'none', border: 0, cursor: 'pointer', color: '#7b5cf0', fontSize: 13, fontWeight: 700, padding: '5px 9px', borderRadius: 999 }}
+                          onMouseEnter={e => { e.currentTarget.style.background = '#eae1ff' }}
+                          onMouseLeave={e => { e.currentTarget.style.background = 'none' }}>Edit</button>
+                        <button onClick={() => del(d.id)} style={{ background: 'none', border: 0, cursor: 'pointer', color: '#b0a8bd', fontSize: 13, fontWeight: 700, padding: '5px 9px', borderRadius: 999 }}
+                          onMouseEnter={e => { e.currentTarget.style.color = '#ff6a4d'; e.currentTarget.style.background = '#ffe9e3' }}
+                          onMouseLeave={e => { e.currentTarget.style.color = '#b0a8bd'; e.currentTarget.style.background = 'none' }}>Delete</button>
+                      </span>
                     </td>
                   </tr>
                 ))}
@@ -151,7 +171,7 @@ export default function Debts() {
       )}
 
       {modal === 'add' && (
-        <Modal title="Add IOU" onClose={() => setModal(null)}>
+        <Modal title={editingId ? 'Edit IOU' : 'Add IOU'} onClose={closeModal}>
           <form onSubmit={submit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             <div style={{ display: 'flex', gap: 8 }}>
               {['lent', 'borrowed'].map(k => (
@@ -196,7 +216,7 @@ export default function Debts() {
             </div>
             {error && <div style={{ background: '#ffe3dc', color: '#9c2f1a', borderRadius: 14, padding: '10px 14px', fontSize: 13.5, fontWeight: 700 }}>{error}</div>}
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10 }}>
-              <button type="button" className="btn-ghost" onClick={() => setModal(null)}>Never mind</button>
+              <button type="button" className="btn-ghost" onClick={closeModal}>Never mind</button>
               <button type="submit" className="btn-violet" disabled={saving}>{saving ? 'Saving…' : 'Save'}</button>
             </div>
           </form>
