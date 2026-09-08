@@ -96,7 +96,7 @@ jobs:
             sudo journalctl -u pocket -n 30 --no-pager
 
             echo "=== Health check ==="
-            curl -sf -o /dev/null -w '%{http_code}\n' localhost:8000/ \
+            curl -sf -o /dev/null -w '%{http_code}\n' localhost:8011/ \
               || { echo "health check FAILED — rolling back"; \
                    sudo cp -a "$APP_DIR/pocket.bak" "$APP_DIR/pocket"; \
                    sudo systemctl restart pocket; exit 1; }
