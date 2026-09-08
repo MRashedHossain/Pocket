@@ -1,0 +1,102 @@
+name: Deploy on tag
+
+on:
+  push:
+    tags:
+      - '*'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # ── Build the Go binary ──────────────────────────────────────────────
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.25'
+          cache: true
+          cache-dependency-path: backend/go.sum
+
+      - name: Build backend
+        working-directory: backend
+        run: |
+          CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
+            go build -trimpath -ldflags="-s -w" -o ../pocket ./cmd/server
+
+      # ── Build the SPA ────────────────────────────────────────────────────
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Build frontend
+        working-directory: frontend
+        run: |
+          npm ci
+          npm run build
+
+      - name: Package web assets
+        run: tar -C frontend/dist -czf web.tar.gz .
+
+      # ── Ship both artifacts to the VM ────────────────────────────────────
+      - name: Copy artifacts to VM
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.VM_HOST }}
+          username: ${{ secrets.VM_USER }}
+          key: ${{ secrets.VM_SSH_KEY }}
+          port: ${{ secrets.VM_SSH_PORT || 22 }}
+          source: "pocket,web.tar.gz"
+          target: "/tmp/pocket-deploy"
+          overwrite: true
+
+      # ── Stage the release and restart the service ───────────────────────
+      - name: Update application
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.VM_HOST }}
+          username: ${{ secrets.VM_USER }}
+          key: ${{ secrets.VM_SSH_KEY }}
+          port: ${{ secrets.VM_SSH_PORT || 22 }}
+          script: |
+            set -euo pipefail
+
+            APP_DIR=/var/www/pocket
+            SRC=/tmp/pocket-deploy
+            TAG="${GITHUB_REF_NAME:-manual}"
+
+            echo "==> Deploying tag $TAG"
+
+            sudo mkdir -p "$APP_DIR/web"
+
+            # Back up the currently running binary.
+            [ -f "$APP_DIR/pocket" ] && sudo cp -a "$APP_DIR/pocket" "$APP_DIR/pocket.bak"
+
+            # New binary.
+            sudo install -m 0755 "$SRC/pocket" "$APP_DIR/pocket"
+
+            # New SPA build (atomic-ish: unpack into a fresh dir, then swap).
+            rm -rf "$SRC/web" && mkdir -p "$SRC/web"
+            tar -C "$SRC/web" -xzf "$SRC/web.tar.gz"
+            sudo rsync -a --delete "$SRC/web/" "$APP_DIR/web/"
+
+            sudo chown -R www-data:www-data "$APP_DIR"
+            rm -rf "$SRC"
+
+            echo "==> Restarting service"
+            sudo systemctl restart pocket
+            sleep 3
+
+            echo "=== Service status ==="
+            sudo systemctl status pocket --no-pager -l | head -20
+
+            echo "=== Last 30 log lines ==="
+            sudo journalctl -u pocket -n 30 --no-pager
+
+            echo "=== Health check ==="
+            curl -sf -o /dev/null -w '%{http_code}\n' localhost:8000/ \
+              || { echo "health check FAILED — rolling back"; \
+                   sudo cp -a "$APP_DIR/pocket.bak" "$APP_DIR/pocket"; \
+                   sudo systemctl restart pocket; exit 1; }
