@@ -12,4 +12,4 @@ push: build
 	docker push $(IMAGE)
 
 run:
-	docker run --rm -p 8000:8000 $(IMAGE)
+	go run cmd/server/main.go

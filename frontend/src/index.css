@@ -342,6 +342,72 @@ a:hover { color: var(--coral); }
 .entity-card-actions .act-edit:hover { color: var(--violet); background: var(--lilac); }
 .entity-card-actions .act-del:hover { color: var(--coral); background: #ffe9e3; }
 
+/* ── Contribution row actions (inside the project detail modal) ───── */
+.contrib-actions { display: inline-flex; gap: 6px; justify-content: flex-end; }
+.contrib-actions button {
+  background: none;
+  border: 1px solid var(--line);
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: 999px;
+  line-height: 1.4;
+  transition: color 0.12s, background 0.12s, border-color 0.12s;
+}
+.contrib-actions .act-edit { color: var(--violet); border-color: var(--lilac); }
+.contrib-actions .act-edit:hover { background: var(--lilac); border-color: var(--violet); }
+.contrib-actions .act-del { color: var(--coral); border-color: #ffd9cf; }
+.contrib-actions .act-del:hover { background: #ffe9e3; border-color: var(--coral); }
+.contrib-actions button:active { transform: translateY(1px); }
+
+/* ── Credit / debit toggle in the contribution form ──────────────── */
+.kind-toggle { display: flex; gap: 8px; }
+.kind-toggle button {
+  flex: 1;
+  padding: 9px 10px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--mut);
+  cursor: pointer;
+  transition: color 0.12s, background 0.12s, border-color 0.12s;
+}
+.kind-toggle button.is-active.credit { color: #0f9d84; background: #e7f8f4; border-color: #0f9d84; }
+.kind-toggle button.is-active.debit { color: #c23a1e; background: #ffe9e3; border-color: #c23a1e; }
+
+/* ── Credit / debit badge in the contributions table ─────────────── */
+.kind-badge {
+  display: inline-block;
+  padding: 2px 9px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+.kind-badge.credit { color: #0f9d84; background: #e7f8f4; }
+.kind-badge.debit { color: #c23a1e; background: #ffe9e3; }
+
+/* ── Credit / debit / net summary pills in the detail modal ──────── */
+.stat-pill {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 14px;
+  border-radius: 12px;
+  background: #faf6ef;
+  border: 1px solid var(--line);
+}
+.stat-pill em { font-style: normal; font-size: 11px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: var(--mut); }
+.stat-pill b { font-size: 15px; }
+.stat-pill.credit b { color: #0f9d84; }
+.stat-pill.debit b { color: #c23a1e; }
+.stat-pill.net { background: var(--lilac); border-color: var(--lilac); }
+.stat-pill.net b { color: var(--violet); }
+
 /* ── Bottom nav (hidden on desktop) ───────────────────────────── */
 .bottom-nav { display: none; }
 

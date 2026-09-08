@@ -3,6 +3,12 @@ import api from '../api/client'
 
 const COLORS = ['#7b5cf0', '#0fb3a3', '#f9a825', '#ff6a4d', '#2f9bff', '#ff5fa2', '#7fc244']
 
+// A debit takes money out of the pot; a credit puts money in. Net = credits − debits.
+// Debit is the default — anything not explicitly "credit" counts as debit.
+const isDebit = c => c.kind !== 'credit'
+const signedAmount = c => (isDebit(c) ? -c.amount : c.amount)
+const netTotal = list => (list || []).reduce((s, c) => s + signedAmount(c), 0)
+
 function Modal({ title, onClose, children }) {
   return (
     <div onClick={onClose} className="modal-overlay">
@@ -27,8 +33,10 @@ export default function Projects() {
   const [memberEmail, setMemberEmail] = useState('')
   const [memberError, setMemberError] = useState('')
   const [memberLoading, setMemberLoading] = useState(false)
+  const [detailId, setDetailId] = useState(null)
   const [contribProject, setContribProject] = useState(null)
-  const [contribForm, setContribForm] = useState({ member: '', amount: '', txn: '' })
+  const [contribEditId, setContribEditId] = useState(null)
+  const [contribForm, setContribForm] = useState({ member: '', amount: '', kind: 'debit', txn: '', note: '' })
   const [contribError, setContribError] = useState('')
   const [contribLoading, setContribLoading] = useState(false)
   const [error, setError] = useState('')
@@ -87,9 +95,19 @@ export default function Projects() {
 
   const openContribute = (project) => {
     setContribProject(project)
-    setContribForm({ member: project.members?.[0] || '', amount: '', txn: '' })
+    setContribEditId(null)
+    setContribForm({ member: project.members?.[0] || '', amount: '', kind: 'debit', txn: '', note: '' })
     setContribError('')
   }
+
+  const openEditContribution = (project, contrib) => {
+    setContribProject(project)
+    setContribEditId(contrib.id)
+    setContribForm({ member: contrib.member, amount: String(contrib.amount), kind: contrib.kind === 'credit' ? 'credit' : 'debit', txn: contrib.txn, note: contrib.note || '' })
+    setContribError('')
+  }
+
+  const closeContribute = () => { setContribProject(null); setContribEditId(null) }
 
   const submitContribute = async e => {
     e.preventDefault()
@@ -97,17 +115,34 @@ export default function Projects() {
     setContribError('')
     setContribLoading(true)
     try {
-      await api.post(`/projects/${contribProject.id}/contributions`, {
+      const payload = {
         member: contribForm.member,
         amount: Number(contribForm.amount) || 0,
+        kind: contribForm.kind,
         txn: contribForm.txn,
-      })
-      setContribProject(null)
+        note: contribForm.note,
+      }
+      if (contribEditId) {
+        await api.patch(`/projects/${contribProject.id}/contributions/${contribEditId}`, payload)
+      } else {
+        await api.post(`/projects/${contribProject.id}/contributions`, payload)
+      }
+      closeContribute()
       load()
     } catch (err) {
-      setContribError(err.response?.data?.error?.message || 'Could not add money')
+      setContribError(err.response?.data?.error?.message || (contribEditId ? 'Could not update' : 'Could not add money'))
     } finally {
       setContribLoading(false)
+    }
+  }
+
+  const delContribution = async (projectId, contribId) => {
+    if (!confirm('Delete this contribution?')) return
+    try {
+      await api.delete(`/projects/${projectId}/contributions/${contribId}`)
+      load()
+    } catch (err) {
+      alert(err.response?.data?.error?.message || 'Could not delete contribution')
     }
   }
 
@@ -124,6 +159,8 @@ export default function Projects() {
     }
   }
 
+  const detail = detailId ? projects.find(p => p.id === detailId) : null
+
   return (
     <>
       <div className="page-topbar" style={{ display: 'flex', alignItems: 'center', gap: 18 }}>
@@ -139,14 +176,19 @@ export default function Projects() {
       ) : (
         <div className="entity-grid">
           {projects.map((p, idx) => {
-            const total = (p.contributions || []).reduce((s, c) => s + c.amount, 0)
-            const pct = p.target > 0 ? Math.min(Math.round(total / p.target * 100), 100) : 0
+            const total = netTotal(p.contributions)
+            const pct = p.target > 0 ? Math.min(Math.round(Math.max(total, 0) / p.target * 100), 100) : 0
             const color = COLORS[idx % COLORS.length]
             return (
               <div key={p.id} className="card">
                 <div className="entity-card-head">
                   <div className="title-block">
-                    <div style={{ fontWeight: 700, fontFamily: '"Bricolage Grotesque"', fontSize: 17, lineHeight: 1.25 }}>{p.name}</div>
+                    <button
+                      type="button"
+                      onClick={() => setDetailId(p.id)}
+                      title="View contributions"
+                      style={{ background: 'none', border: 0, padding: 0, textAlign: 'left', cursor: 'pointer', fontWeight: 700, fontFamily: '"Bricolage Grotesque"', fontSize: 17, lineHeight: 1.25, color: '#7b5cf0', textDecoration: 'underline', textUnderlineOffset: 3 }}
+                    >{p.name}</button>
                     {p.note && <div style={{ fontSize: 13, color: '#6f6880', marginTop: 3 }}>{p.note}</div>}
                   </div>
                   <div className="entity-card-actions">
@@ -182,7 +224,12 @@ export default function Projects() {
                   ))}
                   <button onClick={() => openAddMember(p)} title="Add member" style={{ background: '#eae1ff', color: '#7b5cf0', border: 0, borderRadius: 999, padding: '4px 10px', fontSize: 12.5, fontWeight: 700, cursor: 'pointer' }}>+ Add</button>
                 </div>
-                <button className="btn-violet" onClick={() => openContribute(p)} style={{ marginTop: 12, width: '100%', minHeight: 38, fontSize: 13.5 }}>+ Add money</button>
+                <button
+                  type="button"
+                  onClick={() => setDetailId(p.id)}
+                  style={{ marginTop: 12, width: '100%', minHeight: 36, fontSize: 13, fontWeight: 700, background: '#f4efff', color: '#7b5cf0', border: 0, borderRadius: 999, cursor: 'pointer' }}
+                >View {(p.contributions || []).length} contribution{(p.contributions || []).length !== 1 ? 's' : ''}</button>
+                <button className="btn-violet" onClick={() => openContribute(p)} style={{ marginTop: 8, width: '100%', minHeight: 38, fontSize: 13.5 }}>+ Add money</button>
               </div>
             )
           })}
@@ -213,15 +260,92 @@ export default function Projects() {
         </Modal>
       )}
 
+      {detail && (
+        <Modal title={detail.name} onClose={() => setDetailId(null)}>
+          {(() => {
+            const rows = [...(detail.contributions || [])].sort((a, b) => (b.date || '').localeCompare(a.date || ''))
+            const credit = rows.filter(c => !isDebit(c)).reduce((s, c) => s + c.amount, 0)
+            const debit = rows.filter(isDebit).reduce((s, c) => s + c.amount, 0)
+            const total = credit - debit
+            return (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                {detail.note && <div style={{ fontSize: 13.5, color: '#6f6880' }}>{detail.note}</div>}
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                  <span className="stat-pill credit"><em>Credit</em><b className="tnum">৳{credit.toLocaleString()}</b></span>
+                  <span className="stat-pill debit"><em>Debit</em><b className="tnum">৳{debit.toLocaleString()}</b></span>
+                  <span className="stat-pill net"><em>Net{detail.target > 0 ? ` / ৳${detail.target.toLocaleString()}` : ''}</em><b className="tnum">৳{total.toLocaleString()}</b></span>
+                </div>
+                <div style={{ fontSize: 13, color: '#6f6880' }}>{rows.length} contribution{rows.length !== 1 ? 's' : ''}</div>
+                {rows.length === 0 ? (
+                  <p style={{ color: '#6f6880', fontSize: 14, margin: 0 }}>No contributions yet.</p>
+                ) : (
+                  <div style={{ maxHeight: 320, overflowY: 'auto', border: '1px solid #f0e5d7', borderRadius: 12 }}>
+                    <table className="pocket-table">
+                      <thead>
+                        <tr>
+                          <th>Member</th>
+                          <th>Type</th>
+                          <th>Reference</th>
+                          <th style={{ textAlign: 'right' }}>Amount</th>
+                          <th style={{ textAlign: 'right' }}>Date</th>
+                          <th style={{ textAlign: 'right' }}>Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {rows.map(c => (
+                          <tr key={c.id}>
+                            <td>{c.member}</td>
+                            <td><span className={`kind-badge ${isDebit(c) ? 'debit' : 'credit'}`}>{isDebit(c) ? 'Debit' : 'Credit'}</span></td>
+                            <td style={{ color: '#6f6880' }}>
+                              {c.txn}
+                              {c.note && <div style={{ fontSize: 12, color: '#9a93a8', marginTop: 2 }}>{c.note}</div>}
+                            </td>
+                            <td className="tnum" style={{ fontWeight: 700, color: isDebit(c) ? '#c23a1e' : '#0f9d84' }}>
+                              {isDebit(c) ? '−' : '+'}৳{c.amount.toLocaleString()}
+                            </td>
+                            <td className="tnum" style={{ color: '#6f6880' }}>{c.date}</td>
+                            <td style={{ textAlign: 'right', whiteSpace: 'nowrap' }}>
+                              <span className="contrib-actions">
+                                <button type="button" className="act-edit" onClick={() => openEditContribution(detail, c)}>Edit</button>
+                                <button type="button" className="act-del" onClick={() => delContribution(detail.id, c.id)}>Delete</button>
+                              </span>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10 }}>
+                  <button type="button" className="btn-ghost" onClick={() => setDetailId(null)}>Close</button>
+                  <button type="button" className="btn-violet" onClick={() => openContribute(detail)}>+ Add money</button>
+                </div>
+              </div>
+            )
+          })()}
+        </Modal>
+      )}
+
       {contribProject && (
-        <Modal title={`Add money to ${contribProject.name}`} onClose={() => setContribProject(null)}>
+        <Modal title={contribEditId ? `Edit contribution · ${contribProject.name}` : `Add money to ${contribProject.name}`} onClose={closeContribute}>
           <form onSubmit={submitContribute} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             <div>
               <label className="lbl">Member</label>
               <select className="inp" required value={contribForm.member}
                 onChange={e => setContribForm(f => ({ ...f, member: e.target.value }))}>
-                {(contribProject.members || []).map(m => <option key={m} value={m}>{m}</option>)}
+                {[...new Set([...(contribProject.members || []), contribForm.member].filter(Boolean))].map(m => <option key={m} value={m}>{m}</option>)}
               </select>
+            </div>
+            <div>
+              <label className="lbl">Type</label>
+              <div className="kind-toggle">
+                <button type="button"
+                  className={contribForm.kind === 'credit' ? 'is-active credit' : ''}
+                  onClick={() => setContribForm(f => ({ ...f, kind: 'credit' }))}>Credit (money in)</button>
+                <button type="button"
+                  className={contribForm.kind === 'debit' ? 'is-active debit' : ''}
+                  onClick={() => setContribForm(f => ({ ...f, kind: 'debit' }))}>Debit (money out)</button>
+              </div>
             </div>
             <div>
               <label className="lbl">Amount (৳)</label>
@@ -233,12 +357,17 @@ export default function Projects() {
               <input className="inp" type="text" required placeholder="TXN123ABC"
                 value={contribForm.txn} onChange={e => setContribForm(f => ({ ...f, txn: e.target.value }))} />
             </div>
+            <div>
+              <label className="lbl">Note (optional)</label>
+              <input className="inp" type="text" placeholder="What was this for?"
+                value={contribForm.note} onChange={e => setContribForm(f => ({ ...f, note: e.target.value }))} />
+            </div>
             {contribError && (
               <div style={{ background: '#ffe3dc', color: '#9c2f1a', borderRadius: 14, padding: '10px 14px', fontSize: 13.5, fontWeight: 700 }}>{contribError}</div>
             )}
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10 }}>
-              <button type="button" className="btn-ghost" onClick={() => setContribProject(null)}>Cancel</button>
-              <button type="submit" className="btn-violet" disabled={contribLoading}>{contribLoading ? 'Adding…' : 'Add money'}</button>
+              <button type="button" className="btn-ghost" onClick={closeContribute}>Cancel</button>
+              <button type="submit" className="btn-violet" disabled={contribLoading}>{contribLoading ? 'Saving…' : contribEditId ? 'Save changes' : 'Add money'}</button>
             </div>
           </form>
         </Modal>

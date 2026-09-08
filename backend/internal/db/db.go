@@ -46,6 +46,12 @@ func Connect(dsn string) (*gorm.DB, error) {
 		return nil, err
 	}
 
+	// Backfill contributions that predate the credit/debit split. They were
+	// recorded before the distinction existed, so they count as debit (money
+	// already taken out of the pot). Only touches rows with no kind set, so it
+	// is safe to run on every start.
+	db.Exec(`UPDATE contributions SET kind = 'debit' WHERE kind IS NULL OR kind = ''`)
+
 	ensureIndexes(db)
 	return db, nil
 }

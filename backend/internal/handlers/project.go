@@ -12,12 +12,31 @@ type contributionOut struct {
 	ID     string `json:"id"`
 	Member string `json:"member"`
 	Amount int    `json:"amount"`
+	Kind   string `json:"kind"`
 	Txn    string `json:"txn"`
+	Note   string `json:"note"`
 	Date   string `json:"date"`
 }
 
 func toContribOut(c models.Contribution) contributionOut {
-	return contributionOut{ID: c.ID, Member: c.Member, Amount: c.Amount, Txn: c.Txn, Date: fmtDate(c.Date)}
+	kind := c.Kind
+	if kind == "" {
+		kind = models.ContributionDebit
+	}
+	return contributionOut{ID: c.ID, Member: c.Member, Amount: c.Amount, Kind: kind, Txn: c.Txn, Note: c.Note, Date: fmtDate(c.Date)}
+}
+
+// normalizeKind validates an incoming contribution kind. Empty defaults to
+// debit; anything other than credit/debit is rejected.
+func normalizeKind(k string) (string, bool) {
+	switch k {
+	case "":
+		return models.ContributionDebit, true
+	case models.ContributionCredit, models.ContributionDebit:
+		return k, true
+	default:
+		return "", false
+	}
 }
 
 type projectOut struct {
@@ -110,10 +129,15 @@ func ProjectSummary(db *gorm.DB) gin.HandlerFunc {
 			notFound(c, "Project")
 			return
 		}
-		total := 0
+		credit, debit := 0, 0
 		for _, contrib := range p.Contributions {
-			total += contrib.Amount
+			if contrib.Kind == models.ContributionDebit {
+				debit += contrib.Amount
+			} else {
+				credit += contrib.Amount
+			}
 		}
+		total := credit - debit
 		remaining := 0
 		pct := 0
 		if p.Target > 0 {
@@ -121,13 +145,18 @@ func ProjectSummary(db *gorm.DB) gin.HandlerFunc {
 			if remaining < 0 {
 				remaining = 0
 			}
-			pct = total * 100 / p.Target
+			pctBase := total
+			if pctBase < 0 {
+				pctBase = 0
+			}
+			pct = pctBase * 100 / p.Target
 			if pct > 100 {
 				pct = 100
 			}
 		}
 		c.JSON(http.StatusOK, gin.H{
 			"target": p.Target, "totalContributed": total,
+			"totalCredit": credit, "totalDebit": debit,
 			"remaining": remaining, "pct": pct, "memberCount": len(p.Members),
 		})
 	}
@@ -242,7 +271,11 @@ func GetMemberDetail(db *gorm.DB) gin.HandlerFunc {
 		total := 0
 		out := make([]contributionOut, len(contribs))
 		for i, contrib := range contribs {
-			total += contrib.Amount
+			if contrib.Kind == models.ContributionDebit {
+				total -= contrib.Amount
+			} else {
+				total += contrib.Amount
+			}
 			out[i] = toContribOut(contrib)
 		}
 		c.JSON(http.StatusOK, gin.H{"name": m.Name, "totalContributed": total, "contributions": out})
@@ -301,7 +334,9 @@ func AddContribution(db *gorm.DB) gin.HandlerFunc {
 		var body struct {
 			Member string `json:"member" binding:"required"`
 			Amount int    `json:"amount" binding:"required"`
+			Kind   string `json:"kind"`
 			Txn    string `json:"txn" binding:"required"`
+			Note   string `json:"note"`
 		}
 		if err := c.ShouldBindJSON(&body); err != nil {
 			validationErr(c, err.Error())
@@ -311,7 +346,12 @@ func AddContribution(db *gorm.DB) gin.HandlerFunc {
 			validationErr(c, "Amount must be greater than zero")
 			return
 		}
-		contrib := models.Contribution{ProjectID: p.ID, Member: body.Member, Amount: body.Amount, Txn: body.Txn}
+		kind, ok := normalizeKind(body.Kind)
+		if !ok {
+			validationErr(c, "Kind must be 'credit' or 'debit'")
+			return
+		}
+		contrib := models.Contribution{ProjectID: p.ID, Member: body.Member, Amount: body.Amount, Kind: kind, Txn: body.Txn, Note: body.Note}
 		db.Create(&contrib)
 		c.JSON(http.StatusCreated, toContribOut(contrib))
 	}
@@ -348,17 +388,34 @@ func UpdateContribution(db *gorm.DB) gin.HandlerFunc {
 		var body struct {
 			Member *string `json:"member"`
 			Amount *int    `json:"amount"`
+			Kind   *string `json:"kind"`
 			Txn    *string `json:"txn"`
+			Note   *string `json:"note"`
 		}
 		c.ShouldBindJSON(&body)
 		if body.Member != nil {
 			contrib.Member = *body.Member
 		}
 		if body.Amount != nil {
+			if *body.Amount <= 0 {
+				validationErr(c, "Amount must be greater than zero")
+				return
+			}
 			contrib.Amount = *body.Amount
+		}
+		if body.Kind != nil {
+			kind, ok := normalizeKind(*body.Kind)
+			if !ok {
+				validationErr(c, "Kind must be 'credit' or 'debit'")
+				return
+			}
+			contrib.Kind = kind
 		}
 		if body.Txn != nil {
 			contrib.Txn = *body.Txn
+		}
+		if body.Note != nil {
+			contrib.Note = *body.Note
 		}
 		db.Save(&contrib)
 		c.JSON(http.StatusOK, toContribOut(contrib))
