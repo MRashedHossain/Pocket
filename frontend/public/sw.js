@@ -1,5 +1,5 @@
 /* Pocket service worker — app-shell cache so the PWA launches offline. */
-const CACHE = 'pocket-v3'
+const CACHE = 'pocket-v4'
 const SHELL = ['/', '/index.html', '/manifest.json']
 
 self.addEventListener('install', (e) => {

@@ -16,7 +16,8 @@ ReactDOM.createRoot(document.getElementById('root')).render(
 )
 
 // Register the service worker so Pocket is installable and launches offline.
-if ('serviceWorker' in navigator) {
+// Skipped in dev: its cache-first strategy would serve stale JS/CSS across edits.
+if (import.meta.env.PROD && 'serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/sw.js').catch(() => {})
   })

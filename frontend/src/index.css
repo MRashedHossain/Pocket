@@ -147,6 +147,17 @@ a:hover { color: var(--coral); }
 .pocket-table td.tnum { text-align: right; }
 .pocket-table tbody tr:hover { background: #fffaf2; }
 
+/* Category overview row: shaded summary pinned above a filtered category's entries.
+   Uses the same per-field td layout as a normal row (incl. the mobile stacked-card
+   rules above) so it matches their size/spacing exactly, just tinted differently. */
+.pocket-table tr.category-overview-row,
+.pocket-table tr.category-overview-row:hover,
+.pocket-table tr.category-overview-row td,
+.pocket-table tr.category-overview-row:hover td {
+  background: var(--lilac);
+}
+.pocket-table tr.category-overview-row td { border-top: none; font-weight: 700; }
+
 .btn-coral {
   min-height: 52px;
   padding: 12px 24px;
