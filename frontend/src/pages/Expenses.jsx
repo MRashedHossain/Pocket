@@ -99,17 +99,17 @@ export default function Expenses() {
           <tbody>
             {catFilter && visible.length > 0 && (
               <tr className="category-overview-row">
-                <td colSpan={6}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
-                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8, fontWeight: 700 }}>
-                      <span style={{ width: 10, height: 10, borderRadius: 3, background: colorFor(catFilter), flexShrink: 0 }} />
-                      {catFilter} · {period.label}
-                    </span>
-                    <span className="tnum" style={{ fontWeight: 800 }}>
-                      ৳{catTotal.toLocaleString()} total · {visible.length} expense{visible.length !== 1 ? 's' : ''}
-                    </span>
-                  </div>
+                <td data-label="Date" style={{ color: '#54407f' }}>{period.label}</td>
+                <td data-label="Category">
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+                    <span style={{ width: 10, height: 10, borderRadius: 3, background: colorFor(catFilter), flexShrink: 0 }} />
+                    {catFilter}
+                  </span>
                 </td>
+                <td data-label="Note" style={{ color: '#54407f' }}>{visible.length} expense{visible.length !== 1 ? 's' : ''}</td>
+                <td data-label="Method" />
+                <td data-label="Amount" className="tnum">৳{catTotal.toLocaleString()}</td>
+                <td data-label="" />
               </tr>
             )}
             {visible.length === 0 ? (
