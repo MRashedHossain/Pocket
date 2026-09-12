@@ -68,6 +68,9 @@ export default function Expenses() {
 
   const visible = catFilter ? items.filter(e => e.category === catFilter) : items
   const catTotal = visible.reduce((sum, e) => sum + e.amount, 0)
+  const timelineLabel = period.isDay
+    ? period.label
+    : `${fmtDate(`${period.month}-01`)} – ${fmtDate(new Date().toISOString().slice(0, 10))}`
 
   return (
     <>
@@ -99,7 +102,7 @@ export default function Expenses() {
           <tbody>
             {catFilter && visible.length > 0 && (
               <tr className="category-overview-row">
-                <td data-label="Date" style={{ color: '#54407f' }}>{period.label}</td>
+                <td data-label="Timeline" style={{ color: '#54407f' }}>{timelineLabel}</td>
                 <td data-label="Category">
                   <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
                     <span style={{ width: 10, height: 10, borderRadius: 3, background: colorFor(catFilter), flexShrink: 0 }} />
@@ -108,7 +111,7 @@ export default function Expenses() {
                 </td>
                 <td data-label="Note" style={{ color: '#54407f' }}>{visible.length} expense{visible.length !== 1 ? 's' : ''}</td>
                 <td data-label="Method" />
-                <td data-label="Amount" className="tnum">৳{catTotal.toLocaleString()}</td>
+                <td data-label="Total Spent" className="tnum">৳{catTotal.toLocaleString()}</td>
                 <td data-label="" />
               </tr>
             )}

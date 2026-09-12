@@ -67,6 +67,9 @@ export default function Income() {
 
   const visible = catFilter ? items.filter(i => i.category === catFilter) : items
   const catTotal = visible.reduce((sum, i) => sum + i.amount, 0)
+  const timelineLabel = period.isDay
+    ? period.label
+    : `${fmtDate(`${period.month}-01`)} – ${fmtDate(new Date().toISOString().slice(0, 10))}`
 
   return (
     <>
@@ -98,7 +101,7 @@ export default function Income() {
           <tbody>
             {catFilter && visible.length > 0 && (
               <tr className="category-overview-row">
-                <td data-label="Date" style={{ color: '#54407f' }}>{period.label}</td>
+                <td data-label="Timeline" style={{ color: '#54407f' }}>{timelineLabel}</td>
                 <td data-label="Source">
                   <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
                     <span style={{ width: 10, height: 10, borderRadius: 3, background: colorFor(catFilter), flexShrink: 0 }} />
@@ -106,7 +109,7 @@ export default function Income() {
                   </span>
                 </td>
                 <td data-label="Note" style={{ color: '#54407f' }}>{visible.length} payment{visible.length !== 1 ? 's' : ''}</td>
-                <td data-label="Amount" className="tnum">৳{catTotal.toLocaleString()}</td>
+                <td data-label="Total Earned" className="tnum">৳{catTotal.toLocaleString()}</td>
                 <td data-label="" />
               </tr>
             )}
