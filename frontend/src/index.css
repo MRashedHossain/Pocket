@@ -147,6 +147,10 @@ a:hover { color: var(--coral); }
 .pocket-table td.tnum { text-align: right; }
 .pocket-table tbody tr:hover { background: #fffaf2; }
 
+/* Category overview row: shaded summary pinned above a filtered category's entries */
+.pocket-table tr.category-overview-row td { background: var(--lilac); border-top: none; }
+.pocket-table tr.category-overview-row:hover td { background: var(--lilac); }
+
 .btn-coral {
   min-height: 52px;
   padding: 12px 24px;

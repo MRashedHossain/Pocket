@@ -67,6 +67,7 @@ export default function Expenses() {
   const colorFor = cat => COLORS[cats.findIndex(c => c.name === cat) % COLORS.length] || COLORS[0]
 
   const visible = catFilter ? items.filter(e => e.category === catFilter) : items
+  const catTotal = visible.reduce((sum, e) => sum + e.amount, 0)
 
   return (
     <>
@@ -96,6 +97,21 @@ export default function Expenses() {
             </tr>
           </thead>
           <tbody>
+            {catFilter && visible.length > 0 && (
+              <tr className="category-overview-row">
+                <td colSpan={6}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8, fontWeight: 700 }}>
+                      <span style={{ width: 10, height: 10, borderRadius: 3, background: colorFor(catFilter), flexShrink: 0 }} />
+                      {catFilter} · {period.label}
+                    </span>
+                    <span className="tnum" style={{ fontWeight: 800 }}>
+                      ৳{catTotal.toLocaleString()} total · {visible.length} expense{visible.length !== 1 ? 's' : ''}
+                    </span>
+                  </div>
+                </td>
+              </tr>
+            )}
             {visible.length === 0 ? (
               <tr><td colSpan={6} style={{ textAlign: 'center', color: '#6f6880', padding: '32px 16px' }}>No expenses {catFilter ? `in ${catFilter} ` : ''}{period.noun}</td></tr>
             ) : visible.map(e => (
