@@ -95,6 +95,7 @@ func main() {
 	bud := v1.Group("/budgets")
 	bud.Use(authed...)
 	bud.GET("/summary", handlers.BudgetSummary(database))
+	bud.POST("/import", handlers.ImportBudgets(database))
 	bud.GET("", handlers.ListBudgets(database))
 	bud.POST("", handlers.CreateBudget(database))
 	bud.GET("/:id/usage", handlers.BudgetUsage(database))

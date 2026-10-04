@@ -254,6 +254,7 @@ A budget sets a spending ceiling for an expense category within a given month.
 | GET | `/budgets/{id}` | Fetch one |
 | PATCH | `/budgets/{id}` | Update `category`, `month`, or `limit` |
 | DELETE | `/budgets/{id}` | Delete |
+| POST | `/budgets/import` | Copy previous month's budgets into `month` — body `{ "month": "2026-08" }`. Skips categories already budgeted. Returns `{ fromMonth, month, imported, skipped }` |
 
 ### `GET /budgets/summary?month=2026-08`
 Aggregate across all budgets for the month.

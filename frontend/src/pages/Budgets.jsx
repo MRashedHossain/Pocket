@@ -24,6 +24,8 @@ export default function Budgets() {
   const [form, setForm] = useState({ category: '', limit: '' })
   const [error, setError] = useState('')
   const [saving, setSaving] = useState(false)
+  const [importing, setImporting] = useState(false)
+  const [notice, setNotice] = useState('')
 
   const openAdd = () => { setEditingId(null); setForm({ category: '', limit: '' }); setError(''); setModal(true) }
   const openEdit = b => { setEditingId(b.id); setForm({ category: b.category, limit: String(b.limit) }); setError(''); setModal(true) }
@@ -49,6 +51,23 @@ export default function Budgets() {
     } finally { setSaving(false) }
   }
 
+  const importPrevious = async () => {
+    if (importing) return
+    setNotice(''); setImporting(true)
+    try {
+      const { data } = await api.post('/budgets/import', { month })
+      setNotice(
+        data.imported === 0
+          ? `Nothing to import from ${data.fromMonth}`
+          : `Imported ${data.imported} budget${data.imported === 1 ? '' : 's'} from ${data.fromMonth}` +
+            (data.skipped ? ` (${data.skipped} already set)` : '')
+      )
+      load()
+    } catch (err) {
+      setNotice(err.response?.data?.error?.message || 'Could not import budgets')
+    } finally { setImporting(false) }
+  }
+
   const del = async id => {
     if (!confirm('Delete budget?')) return
     await api.delete(`/budgets/${id}`); load()
@@ -69,9 +88,17 @@ export default function Budgets() {
         <div className="topbar-controls">
           <input type="month" value={month} onChange={e => setMonth(e.target.value)}
             className="inp" style={{ width: 'auto', minHeight: 40, padding: '8px 14px', fontSize: 14 }} />
+          <button className="btn-ghost" onClick={importPrevious} disabled={importing}
+            style={{ minHeight: 40, padding: '8px 20px', fontSize: 14, flexShrink: 0 }}>
+            {importing ? 'Importing…' : 'Import last month'}
+          </button>
           <button className="btn-violet" onClick={openAdd} style={{ minHeight: 40, padding: '8px 20px', fontSize: 14, flexShrink: 0 }}>+ Add budget</button>
         </div>
       </div>
+
+      {notice && (
+        <p style={{ margin: '0 0 16px', color: '#0b6b52', fontSize: 14, fontWeight: 700 }}>{notice}</p>
+      )}
 
       {budgets.length === 0 ? (
         <p style={{ color: '#6f6880' }}>No budgets for this month. Add one to start nudging yourself.</p>

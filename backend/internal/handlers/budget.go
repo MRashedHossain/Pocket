@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/MRashedHossain/pocket/internal/models"
@@ -65,6 +66,56 @@ func CreateBudget(db *gorm.DB) gin.HandlerFunc {
 		b := models.Budget{UserID: currentUser(c).ID, Category: body.Category, Month: body.Month, Limit: *body.Limit}
 		db.Create(&b)
 		c.JSON(http.StatusCreated, enrichBudget(db, b))
+	}
+}
+
+// ImportBudgets copies the previous month's budgets into the target month.
+// Categories that already have a budget in the target month are skipped.
+func ImportBudgets(db *gorm.DB) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		var body struct {
+			Month string `json:"month" binding:"required"`
+		}
+		if err := c.ShouldBindJSON(&body); err != nil {
+			validationErr(c, err.Error())
+			return
+		}
+		target, err := time.Parse("2006-01", body.Month)
+		if err != nil {
+			validationErr(c, "month must be in YYYY-MM format")
+			return
+		}
+		source := target.AddDate(0, -1, 0).Format("2006-01")
+		userID := currentUser(c).ID
+
+		var sourceBudgets []models.Budget
+		db.Where("user_id = ? AND month = ?", userID, source).Find(&sourceBudgets)
+
+		var existing []models.Budget
+		db.Where("user_id = ? AND month = ?", userID, body.Month).Find(&existing)
+		taken := make(map[string]bool, len(existing))
+		for _, b := range existing {
+			taken[b.Category] = true
+		}
+
+		imported := 0
+		for _, src := range sourceBudgets {
+			if taken[src.Category] {
+				continue
+			}
+			b := models.Budget{UserID: userID, Category: src.Category, Month: body.Month, Limit: src.Limit}
+			if err := db.Create(&b).Error; err != nil {
+				errResp(c, http.StatusInternalServerError, "server_error", "Could not import budgets")
+				return
+			}
+			imported++
+		}
+		c.JSON(http.StatusCreated, gin.H{
+			"fromMonth": source,
+			"month":     body.Month,
+			"imported":  imported,
+			"skipped":   len(sourceBudgets) - imported,
+		})
 	}
 }
 
