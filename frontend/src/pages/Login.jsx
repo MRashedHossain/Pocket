@@ -26,18 +26,19 @@ export default function Login() {
   return (
     <div style={{ display: 'flex', minHeight: '100vh', minHeight: '100dvh', flexDirection: 'column' }}>
       <div className="login-mobile-header">
-        <img src="/icon.png" alt="Pocket" width="32" height="32" style={{ borderRadius: 10, objectFit: 'cover', display: 'block' }} />
+        <img src="/favicon.png" alt="Pocket" width="32" height="32" style={{ borderRadius: 10, objectFit: 'cover', display: 'block' }} />
         <span style={{ fontFamily: '"Bricolage Grotesque"', fontWeight: 800, fontSize: 18, letterSpacing: '-0.01em' }}>Pocket</span>
+        <h1 className="sr-only">Pocket — money, minus the mystery.</h1>
       </div>
       <div style={{ display: 'flex', flex: 1, minHeight: 0 }}>
       <div className="login-art" style={{ flex: '1 1 46%', background: '#7b5cf0', minWidth: 0, color: '#fff', padding: 44, flexDirection: 'column', justifyContent: 'space-between' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <img src="/icon.png" alt="Pocket" width="34" height="34" style={{ borderRadius: 12, objectFit: 'cover', display: 'block' }} />
+          <img src="/favicon.png" alt="Pocket" width="34" height="34" style={{ borderRadius: 12, objectFit: 'cover', display: 'block' }} />
           <span style={{ fontFamily: '"Bricolage Grotesque"', fontWeight: 800, fontSize: 19, letterSpacing: '-0.01em' }}>Pocket</span>
         </div>
         <div>
           <h1 style={{ fontSize: 'clamp(38px,4.4vw,58px)', fontWeight: 800, maxWidth: '13em', fontFamily: '"Bricolage Grotesque"', letterSpacing: '-0.02em', lineHeight: 1.08 }}>Money, minus the mystery.</h1>
-          <p style={{ maxWidth: '30em', fontSize: 17, lineHeight: 1.55, color: 'rgba(255,255,255,0.86)', margin: '18px 0 26px' }}>
+          <p style={{ maxWidth: '30em', fontSize: 17, lineHeight: 1.55, color: '#fff', margin: '18px 0 26px' }}>
             Track what you spend, what comes in, the pots you share with friends, and who still owes who.
           </p>
           <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
@@ -46,7 +47,7 @@ export default function Login() {
             <span style={{ background: '#ffe3dc', color: '#9c2f1a', borderRadius: 999, padding: '7px 15px', fontWeight: 700, fontSize: 13.5 }}>IOU tracker</span>
           </div>
         </div>
-        <div style={{ fontSize: 13.5, color: 'rgba(255,255,255,0.7)' }}>Track every taka · stay in control</div>
+        <div style={{ fontSize: 13.5, fontWeight: 600, color: '#fff' }}>Track every taka · stay in control</div>
       </div>
 
       <div style={{ flex: '1 1 54%', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '40px 20px', minWidth: 0 }}>

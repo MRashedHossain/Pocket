@@ -14,6 +14,11 @@ export default defineConfig(({ mode }) => {
 
   return {
     plugins: [react()],
+    build: {
+      // Modern evergreen target: skips the legacy-browser transpilation and
+      // polyfills that esbuild adds for older baselines by default.
+      target: 'es2020',
+    },
     server: {
       host: '0.0.0.0',
       allowedHosts,

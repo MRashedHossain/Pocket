@@ -66,7 +66,7 @@ export default function Layout() {
           <div className="more-sheet" onClick={e => e.stopPropagation()}>
             <div className="more-sheet-grip" />
             <div className="more-sheet-user">
-              <img src="/icon.png" alt="" width="30" height="30" style={{ borderRadius: 9, objectFit: 'cover' }} />
+              <img src="/favicon.png" alt="" width="30" height="30" style={{ borderRadius: 9, objectFit: 'cover' }} />
               <span>
                 <strong style={{ display: 'block', fontFamily: '"Bricolage Grotesque"', fontSize: 15 }}>{user?.name}</strong>
                 <span style={{ fontSize: 12, color: '#6f6880' }}>{user?.email}</span>

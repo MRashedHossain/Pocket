@@ -26,6 +26,8 @@ func main() {
 	handlers.BcryptCost = cfg.BcryptCost
 
 	r := gin.Default()
+	r.Use(middleware.SecurityHeaders())
+	r.Use(middleware.Gzip())
 	r.Use(cors())
 
 	v1 := r.Group("/api/v1")
@@ -193,11 +195,25 @@ func serveSPA(r *gin.Engine, dir string) {
 		// http.Dir.Open rejects path traversal; missing file -> SPA fallback.
 		if f, err := root.Open(p); err == nil {
 			f.Close()
+			setCacheControl(c, p)
 			fileServer.ServeHTTP(c.Writer, c.Request)
 			return
 		}
+		setCacheControl(c, "/index.html")
 		c.File(index)
 	})
+}
+
+// setCacheControl applies long, immutable caching to Vite's content-hashed
+// bundles (safe since any change produces a new filename) and short,
+// revalidate-on-every-load caching to everything else, so index.html (and
+// other un-hashed files like the manifest) always picks up the next deploy.
+func setCacheControl(c *gin.Context, path string) {
+	if strings.HasPrefix(path, "/assets/") {
+		c.Header("Cache-Control", "public, max-age=31536000, immutable")
+		return
+	}
+	c.Header("Cache-Control", "public, max-age=0, must-revalidate")
 }
 
 func cors() gin.HandlerFunc {
